@@ -13,5 +13,7 @@ from .cos_request import CreateFolderRequest
 from .cos_request import StatFileRequest
 from .cos_request import StatFolderRequest
 from .cos_request import ListFolderRequest
+from .cos_request import DownloadFileRequest
+
 from .cos_auth import Auth
 from .cos_cred import CredInfo
