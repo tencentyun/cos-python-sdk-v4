@@ -16,7 +16,7 @@ pip install qcloud_cos_v4
 
 使用easy\_install安装
 ```
-easy\_install qcloud_cos_v4
+easy_install qcloud_cos_v4
 ```
 
 手动安装
