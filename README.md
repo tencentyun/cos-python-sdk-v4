@@ -8,9 +8,13 @@ version: 0.0.1
 
 ## 安装指南
 
-执行 pip install qcloud_cos_v4
+执行 
+```bash 
+pip install qcloud_cos_v4
+```
 
-### 使用python sdk，参照sample.py
+## 使用python sdk，参照sample.py
+
 ```python
     # 设置用户属性, 包括appid, secret_id和secret_key
     # 这些属性可以在cos控制台获取(https://console.qcloud.com/cos)
