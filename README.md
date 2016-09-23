@@ -5,16 +5,28 @@
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000)]()
 
 ## 介绍
-[腾讯云COSv4](https://www.qcloud.com/product/cos.html) 的Python SDK
+[腾讯云COSv4](https://www.qcloud.com/product/cos.html) 的Python SDK, 目前可以支持Python2.6与Python2.7。
 
 ## 安装指南
 
-执行 
+使用pip安装
 ```bash 
 pip install qcloud_cos_v4
 ```
 
-## 使用python sdk，参照sample.py
+使用easy\_install安装
+```
+easy\_install qcloud_cos_v4
+```
+
+手动安装
+```
+python setup.py install
+```
+
+## 使用方法
+
+使用python sdk，参照sample.py
 
 ```python
     # 设置用户属性, 包括appid, secret_id和secret_key
