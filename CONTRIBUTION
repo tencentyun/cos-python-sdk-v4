@@ -1,0 +1,6 @@
+# How To Contribute
+
+Thanks for your contribution, please make sure of following:
+
+1. Your code should be PEP8.
+1. Your code should pass travis CI.
