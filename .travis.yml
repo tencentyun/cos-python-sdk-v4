@@ -4,8 +4,7 @@ python:
   - "2.7"
 
 install:
-  - virtualenv ./nodeps
-  - ./nodeps/bin/python setup.py install
+  - python setup.py install
   - pip freeze
 
 script:
