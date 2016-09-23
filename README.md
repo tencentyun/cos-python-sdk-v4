@@ -1,4 +1,7 @@
 # python sdk for qcloud cos
+
+[![Build Status](https://travis-ci.org/tencentyun/cos-python-sdk-v4.svg?branch=master)](https://travis-ci.org/tencentyun/cos-python-sdk-v4)
+
 python sdk for [腾讯云COS服务]
 version: 0.0.1
 
