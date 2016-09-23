@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/tencentyun/cos-python-sdk-v4.svg?branch=master)](https://travis-ci.org/tencentyun/cos-python-sdk-v4)
 [![Documentation Status](https://readthedocs.org/projects/cossdkv4/badge/?version=latest)](http://cossdkv4.readthedocs.io/en/latest/?badge=latest)
+[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000)]()
 
 python sdk for [腾讯云COS服务]
 version: 0.0.1
