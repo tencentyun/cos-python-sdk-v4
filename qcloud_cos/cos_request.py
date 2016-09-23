@@ -16,9 +16,9 @@ class BaseRequest(object):
         :param bucket_name: bucket的名称
         :param cos_path: cos的绝对路径, 即从bucket下的根/开始
         """
-        self._bucket_name  = bucket_name.strip()
-        self._cos_path     = cos_path.strip()
-        self._param_check   = ParamCheck()
+        self._bucket_name = bucket_name.strip()
+        self._cos_path = cos_path.strip()
+        self._param_check = ParamCheck()
 
     def set_bucket_name(self, bucket_name=u''):
         """设置bucket_name
@@ -337,7 +337,7 @@ class UpdateFileRequest(BaseRequest):
         return self._biz_attr
 
     # 设置authority, 合法取值如下所示
-    # eInvalid(继承bucket), 
+    # eInvalid(继承bucket),
     # eWRPrivate(私有读写),
     # eWPrivateRPublic(私有写, 公有读)
     def set_authority(self, authority):
@@ -584,4 +584,3 @@ class ListFolderRequest(BaseRequest):
         if not self._param_check.check_param_unicode('prefix', self._prefix):
             return False
         return self._param_check.check_param_unicode('context', self._context)
-

@@ -6,6 +6,8 @@ python:
 install:
   - python setup.py install
   - pip freeze
+  - pip install pep8
 
 script:
+  - pep8 qcloud_cos --max-line-length=140
   - nosetests

@@ -223,4 +223,3 @@ if __name__ == '__main__':
 
     # Show the final digest
     print('sha1-digest:', sha1(data))
-
