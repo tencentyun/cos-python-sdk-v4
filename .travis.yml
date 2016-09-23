@@ -9,4 +9,4 @@ install:
   - pip freeze
 
 script:
-  - "nosetests"
+  - nosetests
