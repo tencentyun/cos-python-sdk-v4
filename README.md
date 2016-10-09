@@ -22,7 +22,8 @@ pip install qcloud_cos_v4
     appid = 100000                  # 替换为用户的appid
     secret_id = u'xxxxxxxx'         # 替换为用户的secret_id
     secret_key = u'xxxxxxx'         # 替换为用户的secret_key
-    cos_client = CosClient(appid, secret_id, secret_key)
+    region = "shanghai" #           # 替换为用户的region，目前可以为 shanghai/guangzhou
+    cos_client = CosClient(appid, secret_id, secret_key, region)
 
     # 设置要操作的bucket
     bucket = u'mybucket'

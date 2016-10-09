@@ -198,7 +198,7 @@ class UploadSliceFileRequest(UploadFileRequest):
     UploadSliceFileRequest  分片文件上传请求
     """
 
-    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024, biz_attr=u'', enable_sha1=True, max_con=1):
+    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1):
         """
 
         :param bucket_name: bucket的名称

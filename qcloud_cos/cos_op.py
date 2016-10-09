@@ -99,7 +99,7 @@ class BaseOp(object):
                 http_resp = self._http_session.post(url, verify=False, **kwargs)
             else:
                 http_resp = self._http_session.get(url, verify=False, **kwargs)
-            logger.info("response: " + http_resp.text)
+
             status_code = http_resp.status_code
             if status_code == 200 or status_code == 400:
                 return http_resp.json()
