@@ -8,7 +8,7 @@ if sys.version_info[0] != 2 or sys.version_info[1] < 6:
     sys.exit('Sorry, only python 2.6 or 2.7 is supported')
 
 setup(name='qcloud_cos_v4',
-      version='0.0.2',
+      version='0.0.3',
       description='python sdk for tencent qcloud cos v4.0',
       license='MIT License',
       install_requires=['requests'],
