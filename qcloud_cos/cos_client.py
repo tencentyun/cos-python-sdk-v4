@@ -16,6 +16,7 @@ from cos_request import CreateFolderRequest
 from cos_request import StatFolderRequest
 from cos_request import StatFileRequest
 from cos_request import ListFolderRequest
+from cos_request import DownloadFileRequest
 try:
     from requests.packages.urllib3.exceptions import InsecureRequestWarning
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -26,7 +27,7 @@ except ImportError:
 class CosClient(object):
     """Cos客户端类"""
 
-    def __init__(self, appid, secret_id, secret_key):
+    def __init__(self, appid, secret_id, secret_key, region="shanghai"):
         """ 设置用户的相关信息
 
         :param appid: appid
@@ -34,7 +35,7 @@ class CosClient(object):
         :param secret_key: secret_key
         """
         self._cred = CredInfo(appid, secret_id, secret_key)
-        self._config = CosConfig()
+        self._config = CosConfig(region=region)
         self._http_session = requests.session()
         self._file_op = FileOp(self._cred, self._config, self._http_session)
         self._folder_op = FolderOp(self._cred, self._config, self._http_session)
@@ -121,6 +122,10 @@ class CosClient(object):
         """
         assert isinstance(request, UpdateFileRequest)
         return self._file_op.update_file(request)
+
+    def download_file(self, request):
+        assert isinstance(request, DownloadFileRequest)
+        return self._file_op.download_file(request)
 
     def create_folder(self, request):
         """创建目录

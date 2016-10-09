@@ -17,7 +17,7 @@ from cos_request import CreateFolderRequest
 from cos_request import UpdateFolderRequest
 from cos_request import StatFolderRequest
 from cos_request import DelFolderRequest
-from cos_request import ListFolderRequest
+from cos_request import ListFolderRequest, DownloadFileRequest
 from cos_common import Sha1Util
 
 from logging import getLogger
@@ -67,11 +67,20 @@ class BaseOp(object):
         :return:
         """
         bucket = bucket.encode('utf8')
-        end_point = self._config.get_end_point().rstrip('/').encode('utf8')
+        end_point = self._config.get_endpoint().rstrip('/').encode('utf8')
         appid = self._cred.get_appid()
         cos_path = urllib.quote(cos_path.encode('utf8'), '~/')
         url = '%s/%s/%s%s' % (end_point, appid, bucket, cos_path)
         return url
+
+    def build_download_url(self, bucket, cos_path, sign):
+        # Only support http now
+        appid = self._cred.get_appid()
+        hostname = self._config.get_download_hostname()
+        cos_path = urllib.quote(cos_path)
+        url_tmpl = 'http://{bucket}-{appid}.{hostname}{cos_path}?sign={sign}'
+
+        return url_tmpl.format(bucket=bucket, appid=appid, hostname=hostname, cos_path=cos_path, sign=sign)
 
     def send_request(self, method, bucket, cos_path, **kwargs):
         """ 发送http请求
@@ -84,6 +93,7 @@ class BaseOp(object):
         """
         url = self._build_url(bucket, cos_path)
         logger.debug("sending request, method: %s, bucket: %s, cos_path: %s" % (method, bucket, cos_path))
+
         try:
             if method == 'POST':
                 http_resp = self._http_session.post(url, verify=False, **kwargs)
@@ -332,10 +342,13 @@ class FileOp(BaseOp):
 
         if enable_sha1 is True:
             sha1_by_slice_list = Sha1Util.get_sha1_by_slice(local_path, slice_size)
+            request.sha1_list = sha1_by_slice_list
+            request.sha1_content = sha1_by_slice_list[-1]["datasha"]
         else:
-            sha1_by_slice_list = None
+            request.sha1_list = None
+            request.sha1_content = None
 
-        control_ret = self._upload_slice_control(request, sha1_by_slice_list)
+        control_ret = self._upload_slice_control(request)
 
         # 表示控制分片已经产生错误信息
         if control_ret[u'code'] != 0:
@@ -345,50 +358,56 @@ class FileOp(BaseOp):
         if u'access_url' in control_ret[u'data']:
             return control_ret
 
-        bucket = request.get_bucket_name()
-        cos_path = request.get_cos_path()
         local_path = request.get_local_path()
         file_size = os.path.getsize(local_path)
         slice_size = control_ret[u'data'][u'slice_size']
         offset = 0
         session = control_ret[u'data'][u'session']
+        # ?concurrency
+        if request._max_con <= 1 or (u'serial_upload' in control_ret[u'data'] and control_ret[u'data'][u'serial_upload'] == 1):
 
-        slice_idx = 0
-        with open(local_path, 'rb') as local_file:
+            logger.info("upload file serially")
+            slice_idx = 0
+            with open(local_path, 'rb') as local_file:
 
-            while offset < file_size:
-                file_content = local_file.read(slice_size)
-                retry_count = 0
-                max_retry = 3
-                # 如果分片数据上传发生错误, 则进行重试,默认3次
-                while retry_count < max_retry:
-                    if sha1_by_slice_list is not None:
-                        data_ret = self._upload_slice_data(bucket, cos_path, file_content, session, offset,
-                                                           sha1_by_slice_list[-1]["datasha"])
-                    else:
-                        data_ret = self._upload_slice_data(bucket, cos_path, file_content, session, offset,
-                                                           None)
+                while offset < file_size:
+                    file_content = local_file.read(slice_size)
+
+                    data_ret = self._upload_slice_data(request, file_content, session, offset)
+
                     if data_ret[u'code'] == 0:
                         if u'access_url' in data_ret[u'data']:
                             return data_ret
-                        else:
-                            break
                     else:
-                        retry_count += 1
+                        return data_ret
 
-                if retry_count == max_retry:
-                    return data_ret
-                else:
+                    offset += slice_size
+                    slice_idx += 1
+        else:
+            logger.info('upload file concurrently')
+            from threadpool import SimpleThreadPool
+            pool = SimpleThreadPool(request._max_con)
+
+            slice_idx = 0
+            with open(local_path, 'rb') as local_file:
+
+                while offset < file_size:
+                    file_content = local_file.read(slice_size)
+
+                    pool.add_task(self._upload_slice_data, request, file_content, session, offset)
+
                     offset += slice_size
                     slice_idx += 1
 
-        if sha1_by_slice_list is not None:
-            data_ret = self._upload_slice_finish(request, session, file_size, sha1_by_slice_list[-1]["datasha"])
-        else:
-            data_ret = self._upload_slice_finish(request, session, file_size, None)
+            pool.wait_completion()
+            result = pool.get_result()
+            if not result['success_all']:
+                return {u'code': 1, u'message': str(result)}
+
+        data_ret = self._upload_slice_finish(request, session, file_size)
         return data_ret
 
-    def _upload_slice_finish(self, request, session, filesize, sha1):
+    def _upload_slice_finish(self, request, session, filesize):
         auth = cos_auth.Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
@@ -403,13 +422,13 @@ class FileOp(BaseOp):
         http_body['op'] = "upload_slice_finish"
         http_body['session'] = session
         http_body['filesize'] = str(filesize)
-        if sha1 is not None:
-            http_body['sha'] = sha1
+        if request.sha1_list is not None:
+            http_body['sha'] = request.sha1_list[-1]["datasha"]
         timeout = self._config.get_timeout()
 
         return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
 
-    def _upload_slice_control(self, request, sha1_by_slice):
+    def _upload_slice_control(self, request):
         """串行分片第一步, 上传控制分片
 
         :param request:
@@ -433,8 +452,8 @@ class FileOp(BaseOp):
         http_body = dict()
         http_body['op'] = 'upload_slice_init'
         if request.enable_sha1:
-            http_body['sha'] = sha1_by_slice[-1]["datasha"]
-            http_body['uploadparts'] = json.dumps(sha1_by_slice)
+            http_body['sha'] = request.sha1_list[-1]["datasha"]
+            http_body['uploadparts'] = json.dumps(request.sha1_list)
         http_body['filesize'] = str(file_size)
         http_body['slice_size'] = str(slice_size)
         http_body['biz_attr'] = biz_atrr
@@ -443,16 +462,17 @@ class FileOp(BaseOp):
         timeout = self._config.get_timeout()
         return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
 
-    def _upload_slice_data(self, bucket, cos_path, file_content, session, offset, sha1):
+    def _upload_slice_data(self, request, file_content, session, offset, retry=3):
         """串行分片第二步, 上传数据分片
 
-        :param bucket:
-        :param cos_path:
+        :param request:
         :param file_content:
         :param session:
         :param offset:
         :return:
         """
+        bucket = request.get_bucket_name()
+        cos_path = request.get_cos_path()
         auth = cos_auth.Auth(self._cred)
         expired = int(time.time()) + self._expired_period
         sign = auth.sign_more(bucket, cos_path, expired)
@@ -466,11 +486,42 @@ class FileOp(BaseOp):
         http_body['filecontent'] = file_content
         http_body['session'] = session
         http_body['offset'] = str(offset)
-        if sha1 is not None:
-            http_body['sha'] = sha1
+        if request.sha1_content is not None:
+            http_body['sha'] = request.sha1_content
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+
+        for _ in range(retry):
+            ret = self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+            if ret['code'] == 0:
+                return ret
+        else:
+            return ret
+
+    def __download_url(self, uri, filename):
+        session = self._http_session
+
+        ret = session.get(uri, stream=True)
+
+        with open(filename, 'wb') as f:
+            for chunk in ret.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+            f.flush()
+        ret.close()
+
+    def download_file(self, request):
+        assert isinstance(request, DownloadFileRequest)
+
+        auth = cos_auth.Auth(self._cred)
+        sign = auth.sign_download(request.get_bucket_name(), request.get_cos_path(), self._config.get_sign_expired())
+        url = self.build_download_url(request.get_bucket_name(), request.get_cos_path(), sign)
+        logger.info("Uri is %s" % url)
+        try:
+            self.__download_url(url, request._local_filename)
+            return {u'code': 0, u'message': "download successfully"}
+        except Exception as e:
+            return {u'code': 1, u'message': "download failed, exception: " + str(e)}
 
 
 class FolderOp(BaseOp):

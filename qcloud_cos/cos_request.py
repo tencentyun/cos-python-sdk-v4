@@ -198,7 +198,7 @@ class UploadSliceFileRequest(UploadFileRequest):
     UploadSliceFileRequest  分片文件上传请求
     """
 
-    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024, biz_attr=u'', enable_sha1=True):
+    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1):
         """
 
         :param bucket_name: bucket的名称
@@ -210,7 +210,8 @@ class UploadSliceFileRequest(UploadFileRequest):
         """
         super(UploadSliceFileRequest, self).__init__(bucket_name, cos_path, local_path, biz_attr)
         self._slice_size = slice_size
-        self._enable_sha1 = True
+        self._enable_sha1 = enable_sha1
+        self._max_con = max_con
 
     @property
     def enable_sha1(self):
@@ -584,3 +585,20 @@ class ListFolderRequest(BaseRequest):
         if not self._param_check.check_param_unicode('prefix', self._prefix):
             return False
         return self._param_check.check_param_unicode('context', self._context)
+
+
+class DownloadFileRequest(BaseRequest):
+    def __init__(self, bucket_name, cos_path, local_filename, range_start=None, range_end=None, *args, **kwargs):
+        super(DownloadFileRequest, self).__init__(bucket_name, cos_path)
+
+        self._local_filename = local_filename
+        self._range_start = range_start
+        self._range_end = range_end
+
+    def check_params_valid(self):
+        if not super(DownloadFileRequest, self).check_params_valid():
+            return False
+
+        from os import path
+        if path.exists(self._local_filename):
+            return False
