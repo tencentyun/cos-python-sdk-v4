@@ -338,7 +338,7 @@ class UpdateFileRequest(BaseRequest):
         return self._biz_attr
 
     # 设置authority, 合法取值如下所示
-    # eInvalid(继承bucket), 
+    # eInvalid(继承bucket),
     # eWRPrivate(私有读写),
     # eWPrivateRPublic(私有写, 公有读)
     def set_authority(self, authority):

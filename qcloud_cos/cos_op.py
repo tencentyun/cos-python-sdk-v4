@@ -93,7 +93,7 @@ class BaseOp(object):
         """
         url = self._build_url(bucket, cos_path)
         logger.debug("sending request, method: %s, bucket: %s, cos_path: %s" % (method, bucket, cos_path))
-    
+
         try:
             if method == 'POST':
                 http_resp = self._http_session.post(url, verify=False, **kwargs)
@@ -522,6 +522,7 @@ class FileOp(BaseOp):
             return {u'code': 0, u'message': "download successfully"}
         except Exception as e:
             return {u'code': 1, u'message': "download failed, exception: " + str(e)}
+
 
 class FolderOp(BaseOp):
     """FolderOp 目录相关操作"""
