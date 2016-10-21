@@ -21,6 +21,7 @@ from cos_request import ListFolderRequest, DownloadFileRequest
 from cos_common import Sha1Util
 
 from logging import getLogger
+from traceback import format_exc
 
 logger = getLogger(__name__)
 
@@ -109,7 +110,7 @@ class BaseOp(object):
                 return CosErr.get_err_msg(CosErr.NETWORK_ERROR, err_detail)
         except Exception as e:
             logger.exception("request failed, return SERVER_ERROR")
-            err_detail = 'url:%s, exception:%s' % (url, str(e))
+            err_detail = 'url:%s, exception:%s traceback:%s' % (url, str(e), format_exc())
             return CosErr.get_err_msg(CosErr.SERVER_ERROR, err_detail)
 
     def _check_params(self, request):
