@@ -4,8 +4,9 @@ Qcloud COSv4 SDK
 .. image:: https://travis-ci.org/tencentyun/cos-python-sdk-v4.svg?branch=master
     :target: https://travis-ci.org/tencentyun/cos-python-sdk-v4
 
-.. image:: http://cossdkv4.readthedocs.io/en/latest/?badge=latest
-    :target: https://readthedocs.org/projects/cossdkv4/badge/?version=latest
+.. image:: https://readthedocs.org/projects/cossdkv4/badge/?version=latest
+    :target: http://cossdkv4.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. image:: https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000
    :alt: Hex.pm
