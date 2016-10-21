@@ -6,7 +6,6 @@ Qcloud COSv4 SDK
 
 .. image:: http://cossdkv4.readthedocs.io/en/latest/?badge=latest
     :target: https://readthedocs.org/projects/cossdkv4/badge/?version=latest
-    :alt: Documentation Status
 
 .. image:: https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000
    :alt: Hex.pm
@@ -15,7 +14,7 @@ Qcloud COSv4 SDK
 介绍
 _______
 
-[腾讯云COSv4](https://www.qcloud.com/product/cos.html) 的Python SDK, 目前可以支持Python2.6与Python2.7。
+`腾讯云COSv4 <https://www.qcloud.com/product/cos.html>`_ 的Python SDK, 目前可以支持Python2.6与Python2.7。
 
 安装指南
 ---------
