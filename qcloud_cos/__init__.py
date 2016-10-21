@@ -17,3 +17,15 @@ from .cos_request import DownloadFileRequest
 
 from .cos_auth import Auth
 from .cos_cred import CredInfo
+
+
+import logging
+
+try:
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger(__name__).addHandler(NullHandler())
