@@ -433,7 +433,7 @@ class FileOp(BaseOp):
             del_request = DelFileRequest(request.get_bucket_name(), request.get_cos_path())
             ret = self.del_file(del_request)
             if ret[u'code'] == 0:
-                return self._upload_slice_data(request)
+                return self._upload_slice_file(request)
             else:
                 return ret
         else:
