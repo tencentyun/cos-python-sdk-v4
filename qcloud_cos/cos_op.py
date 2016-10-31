@@ -324,14 +324,23 @@ class FileOp(BaseOp):
         http_body['insertOnly'] = str(request.get_insert_only())
 
         timeout = self._config.get_timeout()
-        return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+        ret = self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
 
-    def upload_slice_file(self, request):
-        """分片文件上传(串行)
+        if request.get_insert_only() != 0:
+            return ret
 
-        :param request:
-        :return:
-        """
+        if ret[u'code'] == 0:
+            return ret
+
+        # try to delete object, and re-post request
+        del_request = DelFileRequest(bucket_name=request.get_bucket_name(), cos_path=request.get_cos_path())
+        ret = self.del_file(del_request)
+        if ret[u'code'] == 0:
+            return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+        else:
+            return ret
+
+    def _upload_slice_file(self, request):
         assert isinstance(request, UploadSliceFileRequest)
         check_params_ret = self._check_params(request)
         if check_params_ret is not None:
@@ -355,7 +364,7 @@ class FileOp(BaseOp):
         if control_ret[u'code'] != 0:
             return control_ret
 
-        #  命中秒传
+        # 命中秒传
         if u'access_url' in control_ret[u'data']:
             return control_ret
 
@@ -365,7 +374,8 @@ class FileOp(BaseOp):
         offset = 0
         session = control_ret[u'data'][u'session']
         # ?concurrency
-        if request._max_con <= 1 or (u'serial_upload' in control_ret[u'data'] and control_ret[u'data'][u'serial_upload'] == 1):
+        if request._max_con <= 1 or (
+                u'serial_upload' in control_ret[u'data'] and control_ret[u'data'][u'serial_upload'] == 1):
 
             logger.info("upload file serially")
             slice_idx = 0
@@ -407,6 +417,27 @@ class FileOp(BaseOp):
 
         data_ret = self._upload_slice_finish(request, session, file_size)
         return data_ret
+
+    def upload_slice_file(self, request):
+        """分片文件上传(串行)
+
+        :param request:
+        :return:
+        """
+        ret = self._upload_slice_file(request)
+
+        if ret[u'code'] == 0:
+            return ret
+
+        if request.get_insert_only() == 0:
+            del_request = DelFileRequest(request.get_bucket_name(), request.get_cos_path())
+            ret = self.del_file(del_request)
+            if ret[u'code'] == 0:
+                return self._upload_slice_file(request)
+            else:
+                return ret
+        else:
+            return ret
 
     def _upload_slice_finish(self, request, session, filesize):
         auth = cos_auth.Auth(self._cred)
