@@ -2,29 +2,62 @@
 # -*- coding: utf-8 -*-
 
 
+class CosRegionInfo(object):
+
+    def __init__(self, region=None, hostname=None, download_hostname=None, *args, **kwargs):
+        self._hostname = None
+        self._download_hostname = None
+
+        if region == 'shanghai':
+            self._hostname = 'sh.file.myqcloud.com'
+            self._download_hostname = 'cossh.myqcloud.com'
+
+        elif region == 'guangzhou':
+            self._hostname = 'gz.file.myqcloud.com'
+            self._download_hostname = 'cosgz.myqcloud.com'
+
+        else:
+            if hostname and download_hostname:
+                self._hostname = hostname
+                self._download_hostname = download_hostname
+            else:
+                raise ValueError("region or [hostname, download_hostname] must be set, and region should be shanghai/guangzhou")
+
+    @property
+    def hostname(self):
+        assert self._hostname is not None
+        return self._hostname
+
+    @property
+    def download_hostname(self):
+        assert self._download_hostname is not None
+        return self._download_hostname
+
+
 class CosConfig(object):
     """CosConfig 有关cos的配置"""
 
-    def __init__(self):
-        self._end_point = 'http://sh.file.myqcloud.com/files/v2'
+    def __init__(self, timeout=300, sign_expired=300, enable_https=True, *args, **kwargs):
+        self._region = CosRegionInfo(*args, **kwargs)
         self._user_agent = 'cos-python-sdk-v4'
-        self._timeout = 3
-        self._sign_expired = 300
+        self._timeout = timeout
+        self._sign_expired = sign_expired
+        self._enable_https = enable_https
+        if self._enable_https:
+            self._protocol = "https"
+        else:
+            self._protocol = "http"
 
-    def set_end_point(self, end_point):
-        """设置COS的域名地址
-
-        :param end_point:
-        :return:
-        """
-        self._end_point = end_point
-
-    def get_end_point(self):
+    def get_endpoint(self):
         """获取域名地址
 
         :return:
         """
-        return self._end_point
+        # tmpl = "%s://%s/files/v2"
+        return self._protocol + "://" + self._region.hostname + "/files/v2"
+
+    def get_download_hostname(self):
+        return self._region.download_hostname
 
     def get_user_agent(self):
         """获取HTTP头中的user_agent
@@ -65,10 +98,17 @@ class CosConfig(object):
         """
         return self._sign_expired
 
+    @property
     def enable_https(self):
-        """打开https
+        assert self._enable_https is not None
+        return self._enable_https
 
-        TODO(lc): There is a bug if use had invoked SetEndpoint
-        :return:
-        """
-        self._end_point = 'https://sh.file.myqcloud.com/files/v2'
+    @enable_https.setter
+    def enable_https(self, val):
+        if val != self._enable_https:
+            if val:
+                self._enable_https = val
+                self._protocol = "https"
+            else:
+                self._enable_https = val
+                self._protocol = "http"

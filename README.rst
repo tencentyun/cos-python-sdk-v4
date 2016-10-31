@@ -1,40 +1,51 @@
-# Qcloud COSv4 SDK
+Qcloud COSv4 SDK
+#######################
 
-[![Build Status](https://travis-ci.org/tencentyun/cos-python-sdk-v4.svg?branch=master)](https://travis-ci.org/tencentyun/cos-python-sdk-v4)
-[![Documentation Status](https://readthedocs.org/projects/cossdkv4/badge/?version=latest)](http://cossdkv4.readthedocs.io/en/latest/?badge=latest)
-[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000)]()
+.. image:: https://travis-ci.org/tencentyun/cos-python-sdk-v4.svg?branch=master
+    :target: https://travis-ci.org/tencentyun/cos-python-sdk-v4
 
-## 介绍
-[腾讯云COSv4](https://www.qcloud.com/product/cos.html) 的Python SDK, 目前可以支持Python2.6与Python2.7。
+.. image:: https://readthedocs.org/projects/cossdkv4/badge/?version=latest
+    :target: http://cossdkv4.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
-## 安装指南
+.. image:: https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000
+   :alt: Hex.pm
 
-使用pip安装
-```bash 
-pip install qcloud_cos_v4
-```
 
-使用easy\_install安装
-```
-easy_install qcloud_cos_v4
-```
+介绍
+_______
 
-手动安装
-```
-python setup.py install
-```
+`腾讯云COSv4 <https://www.qcloud.com/product/cos.html>`_ 的Python SDK, 目前可以支持Python2.6与Python2.7。
 
-## 使用方法
+安装指南
+---------
+
+使用pip安装 ::
+
+    pip install qcloud_cos_v4
+
+使用easy_install安装 ::
+
+    easy_install qcloud_cos_v4
+
+手动安装::
+
+    python setup.py install
+
+使用方法
+-----------
 
 使用python sdk，参照sample.py
 
-```python
+.. code:: python
+
     # 设置用户属性, 包括appid, secret_id和secret_key
     # 这些属性可以在cos控制台获取(https://console.qcloud.com/cos)
     appid = 100000                  # 替换为用户的appid
     secret_id = u'xxxxxxxx'         # 替换为用户的secret_id
     secret_key = u'xxxxxxx'         # 替换为用户的secret_key
-    cos_client = CosClient(appid, secret_id, secret_key)
+    region_info = "shanghai" #           # 替换为用户的region，目前可以为 shanghai/guangzhou
+    cos_client = CosClient(appid, secret_id, secret_key, region=region_info)
 
     # 设置要操作的bucket
     bucket = u'mybucket'
@@ -118,4 +129,3 @@ python setup.py install
     request = DelFolderRequest(bucket, u'/sample_folder/')
     delete_folder_ret = cos_client.del_folder(request)
     print 'delete folder ret:', repr(delete_folder_ret)
-```
