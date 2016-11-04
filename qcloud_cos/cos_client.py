@@ -105,6 +105,9 @@ class CosClient(object):
         assert isinstance(request, DelFileRequest)
         return self._file_op.del_file(request)
 
+    def move_file(self, request):
+        return self._file_op.move_file(request)
+
     def stat_file(self, request):
         """获取文件属性
 

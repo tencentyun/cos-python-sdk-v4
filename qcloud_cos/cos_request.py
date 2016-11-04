@@ -602,3 +602,25 @@ class DownloadFileRequest(BaseRequest):
         from os import path
         if path.exists(self._local_filename):
             return False
+
+
+class MoveFileRequest(BaseRequest):
+
+    def __init__(self, bucket_name, cos_path, dest_path, overwrite=False):
+        super(MoveFileRequest, self).__init__(bucket_name, cos_path)
+        self._dest_path = dest_path
+        if isinstance(overwrite, bool):
+            if overwrite:
+                self._overwrite = 1
+            else:
+                self._overwrite = 0
+        else:
+            raise ValueError("overwrite must be an instance of Boolean")
+
+    @property
+    def dest_path(self):
+        return self._dest_path
+
+    @property
+    def overwrite(self):
+        return self._overwrite
