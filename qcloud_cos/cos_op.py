@@ -17,7 +17,7 @@ from cos_request import CreateFolderRequest
 from cos_request import UpdateFolderRequest
 from cos_request import StatFolderRequest
 from cos_request import DelFolderRequest
-from cos_request import ListFolderRequest, DownloadFileRequest
+from cos_request import ListFolderRequest, DownloadFileRequest, MoveFileRequest
 from cos_common import Sha1Util
 
 from logging import getLogger
@@ -555,6 +555,29 @@ class FileOp(BaseOp):
         except Exception as e:
             return {u'code': 1, u'message': "download failed, exception: " + str(e)}
 
+    def __move_file(self, request):
+
+        auth = cos_auth.Auth(self._cred)
+        bucket = request.get_bucket_name()
+        cos_path = request.get_cos_path()
+        sign = auth.sign_once(bucket, cos_path)
+
+        http_header = dict()
+        http_header['Authorization'] = sign
+        http_header['User-Agent'] = self._config.get_user_agent()
+
+        http_body = dict()
+        http_body['op'] = 'move'
+        http_body['dest_fileid'] = request.dest_path
+        http_body['to_over_write'] = str(1 if request.overwrite else 0)
+
+        timeout = self._config.get_timeout()
+        return self.send_request('POST', bucket, cos_path, headers=http_header, params=http_body, timeout=timeout)
+
+    def move_file(self, request):
+
+        assert isinstance(request, MoveFileRequest)
+        return self.__move_file(request)
 
 class FolderOp(BaseOp):
     """FolderOp 目录相关操作"""
