@@ -579,6 +579,7 @@ class FileOp(BaseOp):
         assert isinstance(request, MoveFileRequest)
         return self.__move_file(request)
 
+
 class FolderOp(BaseOp):
     """FolderOp 目录相关操作"""
     def __init__(self, cred, config, http_session):

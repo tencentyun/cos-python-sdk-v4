@@ -174,4 +174,3 @@ class CosClient(object):
         """
         assert isinstance(request, ListFolderRequest)
         return self._folder_op.list_folder(request)
-
