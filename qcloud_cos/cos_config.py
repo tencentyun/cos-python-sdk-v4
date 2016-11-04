@@ -16,6 +16,10 @@ class CosRegionInfo(object):
             self._hostname = 'gz.file.myqcloud.com'
             self._download_hostname = 'cosgz.myqcloud.com'
 
+        elif region == 'tianjing':
+            self._hostname = 'tj.file.myqcloud.com'
+            self._download_hostname = 'costj.myqcloud.com'
+
         else:
             if hostname and download_hostname:
                 self._hostname = hostname
