@@ -2,5 +2,5 @@
 
 Thanks for your contribution, please make sure of following:
 
-1. Your code should be PEP8.
-1. Your code should pass travis CI.
+1. Your code should follows PEP8 style.
+1. Your code should passes travis CI.
