@@ -28,11 +28,8 @@ __________
 
 使用pip安装 ::
 
-    pip install qcloud_cos_v4
+    pip install -U qcloud_cos_v4
 
-使用easy_install安装 ::
-
-    easy_install qcloud_cos_v4
 
 手动安装::
 
