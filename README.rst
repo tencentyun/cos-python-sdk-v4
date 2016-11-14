@@ -24,7 +24,7 @@ _______
 `腾讯云COSv4 <https://www.qcloud.com/product/cos.html>`_ 的Python SDK, 目前可以支持Python2.6与Python2.7。
 
 安装指南
----------
+__________
 
 使用pip安装 ::
 
@@ -39,7 +39,7 @@ _______
     python setup.py install
 
 使用方法
------------
+__________
 
 使用python sdk，参照sample.py
 
@@ -50,7 +50,7 @@ _______
     appid = 100000                  # 替换为用户的appid
     secret_id = u'xxxxxxxx'         # 替换为用户的secret_id
     secret_key = u'xxxxxxx'         # 替换为用户的secret_key
-    region_info = "shanghai" #           # 替换为用户的region，目前可以为 shanghai/guangzhou
+    region_info = "sh" #           # 替换为用户的region，目前可以为 sh/gz/tj，分别对应于上海，广州，天津园区
     cos_client = CosClient(appid, secret_id, secret_key, region=region_info)
 
     # 设置要操作的bucket
