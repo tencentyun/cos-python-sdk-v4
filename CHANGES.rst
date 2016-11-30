@@ -1,6 +1,6 @@
 CHANGES
 +++++++++
-
+* 0.0.9  add new region: spg
 * 0.0.8  fix bug
 * 0.0.7  update documents
 * 0.0.6  add tj region, enable_https changes to False
