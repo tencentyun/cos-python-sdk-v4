@@ -8,6 +8,7 @@ class CosRegionInfo(object):
         self._hostname = None
         self._download_hostname = None
 
+
         if region in ['sh', 'shanghai']:
             self._hostname = 'sh.file.myqcloud.com'
             self._download_hostname = 'cossh.myqcloud.com'
@@ -19,6 +20,10 @@ class CosRegionInfo(object):
         elif region in ['tj', 'tianjing']:
             self._hostname = 'tj.file.myqcloud.com'
             self._download_hostname = 'costj.myqcloud.com'
+
+        elif region in ['sgp', 'singapore']:
+            self._hostname = 'sgp.file.myqcloud.com'
+            self._download_hostname = 'cosspg.myqcloud.com'
 
         else:
             if hostname and download_hostname:
