@@ -8,7 +8,6 @@ class CosRegionInfo(object):
         self._hostname = None
         self._download_hostname = None
 
-
         if region in ['sh', 'shanghai']:
             self._hostname = 'sh.file.myqcloud.com'
             self._download_hostname = 'cossh.myqcloud.com'
