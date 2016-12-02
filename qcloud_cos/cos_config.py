@@ -29,7 +29,7 @@ class CosRegionInfo(object):
                 self._hostname = hostname
                 self._download_hostname = download_hostname
             else:
-                raise ValueError("region or [hostname, download_hostname] must be set, and region should be shanghai/guangzhou")
+                raise ValueError("region or [hostname, download_hostname] must be set, and region should be sh/gz/tj/sgp")
 
     @property
     def hostname(self):
