@@ -25,6 +25,10 @@ class Auth(object):
             fileid = '/%s/%s%s' % (appid, bucket, cos_path)
         else:
             fileid = cos_path
+
+        if expired < now:
+            expired = now + expired
+
         sign_tuple = (appid, secret_id, expired, now, rdm, fileid, bucket)
 
         plain_text = 'a=%s&k=%s&e=%d&t=%d&r=%d&f=%s&b=%s' % sign_tuple
