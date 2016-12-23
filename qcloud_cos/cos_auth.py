@@ -26,7 +26,7 @@ class Auth(object):
         else:
             fileid = cos_path
 
-        if expired < now:
+        if expired != 0 and expired < now:
             expired = now + expired
 
         sign_tuple = (appid, secret_id, expired, now, rdm, fileid, bucket)
