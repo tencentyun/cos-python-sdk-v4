@@ -534,13 +534,15 @@ class FileOp(BaseOp):
         session = self._http_session
 
         ret = session.get(uri, stream=True)
+        if ret.status_code in [200, 206]:
 
-        with open(filename, 'wb') as f:
-            for chunk in ret.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-            f.flush()
-        ret.close()
+            with open(filename, 'wb') as f:
+                for chunk in ret.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+                f.flush()
+        else:
+            raise IOError("download failed " + ret.text)
 
     def download_file(self, request):
         assert isinstance(request, DownloadFileRequest)
