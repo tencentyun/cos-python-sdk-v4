@@ -535,7 +535,6 @@ class FileOp(BaseOp):
 
         ret = session.get(uri, stream=True)
         if ret.status_code in [200, 206]:
-
             with open(filename, 'wb') as f:
                 for chunk in ret.iter_content(chunk_size=1024):
                     if chunk:
