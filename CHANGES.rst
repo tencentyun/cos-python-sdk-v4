@@ -1,5 +1,6 @@
 CHANGES
 +++++++++
+* 0.0.11 fix bug: check http status code in download
 * 0.0.10 fix bug: download signature expired
 * 0.0.9  add new region: spg
 * 0.0.8  fix bug
