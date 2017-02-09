@@ -6,6 +6,7 @@ import time
 import json
 import hashlib
 import urllib
+from contextlib import closing
 import cos_auth
 from cos_err import CosErr
 from cos_request import UploadFileRequest
@@ -533,15 +534,15 @@ class FileOp(BaseOp):
     def __download_url(self, uri, filename):
         session = self._http_session
 
-        ret = session.get(uri, stream=True)
-        if ret.status_code in [200, 206]:
-            with open(filename, 'wb') as f:
-                for chunk in ret.iter_content(chunk_size=1024):
-                    if chunk:
-                        f.write(chunk)
-                f.flush()
-        else:
-            raise IOError("download failed " + ret.text)
+        with closing(session.get(uri, stream=True)) as ret:
+            if ret.status_code in [200, 206]:
+                with open(filename, 'wb') as f:
+                    for chunk in ret.iter_content(chunk_size=1024):
+                        if chunk:
+                            f.write(chunk)
+                    f.flush()
+            else:
+                raise IOError("download failed " + ret.text)
 
     def download_file(self, request):
         assert isinstance(request, DownloadFileRequest)
