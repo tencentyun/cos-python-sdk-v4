@@ -23,7 +23,7 @@ class CosRegionInfo(object):
         elif region in ['sgp', 'singapore']:
             self._hostname = 'sgp.file.myqcloud.com'
             self._download_hostname = 'cosspg.myqcloud.com'
-            
+
         elif region is not None:
             self._hostname = '{region}.file.myqcloud.com'.format(region=region)
             self._download_hostname = 'cos{region}.myqcloud.com'.format(region=region)
