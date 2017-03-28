@@ -538,7 +538,7 @@ class FileOp(BaseOp):
             if ret.status_code in [200, 206]:
 
                 if 'Content-Length' in ret.headers:
-                    content_len = ret.headers['Content-Length']
+                    content_len = int(ret.headers['Content-Length'])
                 else:
                     raise IOError("download failed without Content-Length header")
 
@@ -552,7 +552,7 @@ class FileOp(BaseOp):
                 if file_len != content_len:
                     raise IOError("download failed with incomplete file")
             else:
-                raise IOError("download failed " + ret.text)
+                raise IOError("download failed with status code:" + str(ret.status_code))
 
     def download_file(self, request):
         assert isinstance(request, DownloadFileRequest)
