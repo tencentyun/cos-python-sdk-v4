@@ -534,13 +534,23 @@ class FileOp(BaseOp):
     def __download_url(self, uri, filename):
         session = self._http_session
 
-        with closing(session.get(uri, stream=True)) as ret:
+        with closing(session.get(uri, stream=True, timeout=150)) as ret:
             if ret.status_code in [200, 206]:
+
+                if 'Content-Length' in ret.headers:
+                    content_len = ret.headers['Content-Length']
+                else:
+                    raise IOError("download failed without Content-Length header")
+
+                file_len = 0
                 with open(filename, 'wb') as f:
                     for chunk in ret.iter_content(chunk_size=1024):
                         if chunk:
+                            file_len += len(chunk)
                             f.write(chunk)
                     f.flush()
+                if file_len != content_len:
+                    raise IOError("download failed with incomplete file")
             else:
                 raise IOError("download failed " + ret.text)
 
