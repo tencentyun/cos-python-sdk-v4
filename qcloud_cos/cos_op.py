@@ -531,10 +531,10 @@ class FileOp(BaseOp):
         else:
             return ret
 
-    def __download_url(self, uri, filename):
+    def __download_url(self, uri, filename, headers):
         session = self._http_session
 
-        with closing(session.get(uri, stream=True, timeout=150)) as ret:
+        with closing(session.get(uri, stream=True, timeout=30, headers=headers)) as ret:
             if ret.status_code in [200, 206]:
 
                 if 'Content-Length' in ret.headers:
@@ -562,7 +562,7 @@ class FileOp(BaseOp):
         url = self.build_download_url(request.get_bucket_name(), request.get_cos_path(), sign)
         logger.info("Uri is %s" % url)
         try:
-            self.__download_url(url, request._local_filename)
+            self.__download_url(url, request._local_filename, request._custom_headers)
             return {u'code': 0, u'message': "download successfully"}
         except Exception as e:
             return {u'code': 1, u'message': "download failed, exception: " + str(e)}
