@@ -14,6 +14,6 @@ setup(name='qcloud_cos_v4',
       license='MIT License',
       install_requires=['requests'],
       author='liuchang0812',
-      author_email='liuchang0812@gmail.com.com',
+      author_email='liuchang0812@gmail.com',
       url='https://www.qcloud.com',
       packages=find_packages())
