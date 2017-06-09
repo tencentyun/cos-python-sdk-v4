@@ -10,11 +10,6 @@ Qcloud COSv4 SDK
     
 .. image:: https://readthedocs.org/projects/cossdkv4/badge/?version=latest
     :target: http://cossdkv4.readthedocs.io/en/latest/?badge=latest
-
-.. image:: https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000
-   :alt: Hex.pm
-
-
     
 介绍
 _______
