@@ -103,7 +103,7 @@ class BaseOp(object):
                 http_resp = self._http_session.get(url, verify=False, **kwargs)
 
             status_code = http_resp.status_code
-            if status_code == 200 or status_code == 400:
+            if status_code < 500:
                 return http_resp.json()
             else:
                 logger.warning("request failed, response message: %s" % http_resp.text)
