@@ -371,7 +371,8 @@ class FileOp(BaseOp):
 
         local_path = request.get_local_path()
         file_size = os.path.getsize(local_path)
-        slice_size = control_ret[u'data'][u'slice_size']
+        if u'slice_size' in control_ret[u'data']:
+            slice_size = control_ret[u'data'][u'slice_size']
         offset = 0
         session = control_ret[u'data'][u'session']
         # ?concurrency
