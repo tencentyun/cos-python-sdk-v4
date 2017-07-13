@@ -1,5 +1,6 @@
 CHANGES
 +++++++++
+* 0.0.20 fix slice_size
 * 0.0.14 avoid incomplete downloading
 * 0.0.13 add more region information
 * 0.0.12 fix bug: close context in download
