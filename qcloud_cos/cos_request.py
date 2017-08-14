@@ -608,6 +608,22 @@ class DownloadFileRequest(BaseRequest):
             return False
 
 
+class DownloadObjectRequest(BaseRequest):
+    def __init__(self, bucket_name, cos_path, range_start=None, range_end=None, *args, **kwargs):
+        super(DownloadObjectRequest, self).__init__(bucket_name, cos_path)
+
+        self._range_start = range_start
+        self._range_end = range_end
+
+        self._custom_headers = None
+        if 'headers' in kwargs:
+            self._custom_headers = kwargs['headers']
+
+    def check_params_valid(self):
+        if not super(DownloadObjectRequest, self).check_params_valid():
+            return False
+
+
 class MoveFileRequest(BaseRequest):
 
     def __init__(self, bucket_name, cos_path, dest_path, overwrite=False):

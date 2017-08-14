@@ -17,6 +17,7 @@ from cos_request import StatFolderRequest
 from cos_request import StatFileRequest
 from cos_request import ListFolderRequest
 from cos_request import DownloadFileRequest
+from cos_request import DownloadObjectRequest
 try:
     from requests.packages.urllib3.exceptions import InsecureRequestWarning
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -129,6 +130,10 @@ class CosClient(object):
     def download_file(self, request):
         assert isinstance(request, DownloadFileRequest)
         return self._file_op.download_file(request)
+
+    def download_object(self, request):
+        assert isinstance(request, DownloadObjectRequest)
+        return self._file_op.download_object(request)
 
     def create_folder(self, request):
         """创建目录
