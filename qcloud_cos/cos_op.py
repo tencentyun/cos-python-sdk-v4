@@ -574,6 +574,8 @@ class FileOp(BaseOp):
         ret = session.get(uri, stream=True, timeout=30, headers=headers)
         if ret.status_code in [200, 206]:
             return ret.raw
+        else:
+            raise IOError("get object failed with status code:" + str(ret.status_code))
 
     def download_object(self, request):
         assert isinstance(request, DownloadObjectRequest)
@@ -582,11 +584,9 @@ class FileOp(BaseOp):
         sign = auth.sign_download(request.get_bucket_name(), request.get_cos_path(), self._config.get_sign_expired())
         url = self.build_download_url(request.get_bucket_name(), request.get_cos_path(), sign)
         logger.info("Uri is %s" % url)
-        try:
-            ret = self.__download_object_url(url, request._custom_headers)
-            return ret
-        except Exception as e:
-            return {u'code': 1, u'message': "get object failed, exception: " + str(e)}
+
+        ret = self.__download_object_url(url, request._custom_headers)
+        return ret
 
     def __move_file(self, request):
 
