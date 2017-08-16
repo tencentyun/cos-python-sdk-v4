@@ -4,6 +4,8 @@
 from qcloud_cos import CosClient
 from qcloud_cos import UploadFileRequest
 from qcloud_cos import UploadSliceFileRequest
+from qcloud_cos import UploadFileFromBufferRequest
+from qcloud_cos import UploadSliceFileFromBufferRequest
 from qcloud_cos import UpdateFileRequest
 from qcloud_cos import UpdateFolderRequest
 from qcloud_cos import DelFileRequest
@@ -82,6 +84,14 @@ def cos_demo():
     request = StatFileRequest(bucket, u'/sample_file.txt')
     stat_file_ret = cos_client.stat_file(request)
     logger.info('stat file, return message: ' + str(stat_file_ret))
+    
+    # 6. 从内存上传文件
+    with open("111.txt", 'rb') as File:
+        data = File.read()
+    request = UploadFileFromBufferRequest(bucket, u'/119.txt', data)
+    request.set_insert_only(0)  # 设置允许覆盖
+    upload_file_ret = cos_client.upload_file_from_buffer(request)
+    logger.info('overwrite file, return message:' + str(upload_file_ret))
 
     ############################################################################
     # 目录操作                                                                 #
