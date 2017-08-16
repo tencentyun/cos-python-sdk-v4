@@ -8,16 +8,17 @@ from cos_op import FileOp
 from cos_op import FolderOp
 from cos_request import UploadFileRequest
 from cos_request import UploadSliceFileRequest
+from cos_request import UploadFileFromBufferRequest
+from cos_request import UploadSliceFileFromBufferRequest
 from cos_request import UpdateFileRequest
 from cos_request import UpdateFolderRequest
 from cos_request import DelFileRequest
 from cos_request import DelFolderRequest
-from cos_request import CreateFolderRequest
+from cos_request import CreateFolderRequest 
 from cos_request import StatFolderRequest
 from cos_request import StatFileRequest
 from cos_request import ListFolderRequest
 from cos_request import DownloadFileRequest
-from cos_request import DownloadObjectRequest
 try:
     from requests.packages.urllib3.exceptions import InsecureRequestWarning
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -96,6 +97,33 @@ class CosClient(object):
         """
         assert isinstance(request, UploadSliceFileRequest)
         return self._file_op.upload_slice_file(request)
+    
+    def upload_file_from_buffer(self, request):
+        """ 从内存上传文件(自动根据文件大小，选择上传策略, 强烈推荐使用),上传策略: 8MB以下适用单文件上传, 8MB(含)适用分片上传
+
+        :param request:
+        :return:
+        """
+        assert isinstance(request, UploadFileFromBufferRequest)
+        return self._file_op.upload_file_from_buffer(request)
+
+    def upload_single_file_from_buffer(self, request):
+        """从内存单文件上传接口, 适用用小文件8MB以下, 最大不得超过20MB, 否则会返回参数错误
+
+        :param request:
+        :return:
+        """
+        assert isinstance(request, UploadFileFromBufferRequest)
+        return self._file_op.upload_single_file_from_buffer(request)
+
+    def upload_slice_file_from_buffer(self, request):
+        """ 从内存分片上传接口, 适用于大文件8MB及以上
+
+        :param request:
+        :return:
+        """
+        assert isinstance(request, UploadSliceFileFromBufferRequest)
+        return self._file_op.upload_slice_file_from_buffer(request)
 
     def del_file(self, request):
         """ 删除文件
@@ -130,10 +158,6 @@ class CosClient(object):
     def download_file(self, request):
         assert isinstance(request, DownloadFileRequest)
         return self._file_op.download_file(request)
-
-    def download_object(self, request):
-        assert isinstance(request, DownloadObjectRequest)
-        return self._file_op.download_object(request)
 
     def create_folder(self, request):
         """创建目录
