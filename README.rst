@@ -103,6 +103,16 @@ __________
     del_ret = cos_client.del_file(request)
     print 'del file ret:', repr(del_ret)
 
+    # 8. 下载文件
+    request = DownloadFileRequest(bucket, u'/sample_file_move.txt')
+    del_ret = cos_client.download_file(request)
+    print 'del file ret:', repr(del_ret)
+
+    # 9. 下载文件到内存
+    request = DownloadObjectRequest(bucket, u'/sample_file_move.txt')
+    fp = cos_client.download_object(request)
+    fp.read()
+
     ############################################################################
     # 目录操作                                                                 #
     ############################################################################
