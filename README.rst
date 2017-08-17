@@ -57,10 +57,15 @@ __________
     print 'upload file ret:', repr(upload_file_ret)
 
     # 2. 上传文件(覆盖文件)
-    #    将本地的local_file_2.txt上传到bucket的根分区下,覆盖已上传的sample_file.txt
+    # 2.1上传本地文件，将本地的local_file_2.txt上传到bucket的根分区下,覆盖已上传的sample_file.txt
     request = UploadFileRequest(bucket, u'/sample_file.txt', u'local_file_2.txt')
     request.set_insert_only(0)  # 设置允许覆盖
     upload_file_ret = cos_client.upload_file(request)
+    print 'overwrite file ret:', repr(upload_file_ret)
+    # 2.2从内存上传文件
+    request = UploadFileFromBufferRequest(bucket, u'/sample_file.txt', data)
+    request.set_insert_only(0)  # 设置允许覆盖
+    upload_file_ret = cos_client.upload_file_from_buffer(request)
     print 'overwrite file ret:', repr(upload_file_ret)
 
     # 3. 获取文件属性
