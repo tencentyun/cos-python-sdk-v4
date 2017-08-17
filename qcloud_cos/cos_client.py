@@ -14,7 +14,7 @@ from cos_request import UpdateFileRequest
 from cos_request import UpdateFolderRequest
 from cos_request import DelFileRequest
 from cos_request import DelFolderRequest
-from cos_request import CreateFolderRequest 
+from cos_request import CreateFolderRequest
 from cos_request import StatFolderRequest
 from cos_request import StatFileRequest
 from cos_request import ListFolderRequest
@@ -97,7 +97,7 @@ class CosClient(object):
         """
         assert isinstance(request, UploadSliceFileRequest)
         return self._file_op.upload_slice_file(request)
-    
+
     def upload_file_from_buffer(self, request):
         """ 从内存上传文件(自动根据文件大小，选择上传策略, 强烈推荐使用),上传策略: 8MB以下适用单文件上传, 8MB(含)适用分片上传
 

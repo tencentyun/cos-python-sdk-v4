@@ -534,7 +534,6 @@ class FileOp(BaseOp):
         else:
             return ret
 
-
     def upload_file_from_buffer(self, request):
         """上传文件, 根据用户的文件大小,选择单文件上传和分片上传策略
 
@@ -626,7 +625,6 @@ class FileOp(BaseOp):
         slice_size = request.get_slice_size()
         enable_sha1 = request.enable_sha1
 
-        
         request.sha1_list = None
         request.sha1_content = None
 
