@@ -20,7 +20,7 @@ from cos_request import CreateFolderRequest
 from cos_request import UpdateFolderRequest
 from cos_request import StatFolderRequest
 from cos_request import DelFolderRequest
-from cos_request import ListFolderRequest, DownloadFileRequest, MoveFileRequest
+from cos_request import ListFolderRequest, DownloadFileRequest, DownloadObjectRequest, MoveFileRequest
 from cos_common import Sha1Util
 
 from logging import getLogger
@@ -797,7 +797,26 @@ class FileOp(BaseOp):
             return {u'code': 0, u'message': "download successfully"}
         except Exception as e:
             return {u'code': 1, u'message': "download failed, exception: " + str(e)}
+ 
+   def __download_object_url(self, uri, headers):
+        session = self._http_session
 
+        ret = session.get(uri, stream=True, timeout=30, headers=headers)
+        if ret.status_code in [200, 206]:
+            return ret.raw
+        else:
+            raise IOError("get object failed with status code:" + str(ret.status_code))
+
+    def download_object(self, request):
+        assert isinstance(request, DownloadObjectRequest)
+
+        auth = cos_auth.Auth(self._cred)
+        sign = auth.sign_download(request.get_bucket_name(), request.get_cos_path(), self._config.get_sign_expired())
+        url = self.build_download_url(request.get_bucket_name(), request.get_cos_path(), sign)
+        logger.info("Uri is %s" % url)
+
+        ret = self.__download_object_url(url, request._custom_headers)
+        return ret
     def __move_file(self, request):
 
         auth = cos_auth.Auth(self._cred)
