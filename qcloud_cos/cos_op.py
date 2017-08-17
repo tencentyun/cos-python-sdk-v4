@@ -11,6 +11,8 @@ import cos_auth
 from cos_err import CosErr
 from cos_request import UploadFileRequest
 from cos_request import UploadSliceFileRequest
+from cos_request import UploadFileFromBufferRequest
+from cos_request import UploadSliceFileFromBufferRequest
 from cos_request import UpdateFileRequest
 from cos_request import DelFileRequest
 from cos_request import StatFileRequest
@@ -532,6 +534,234 @@ class FileOp(BaseOp):
         else:
             return ret
 
+    def upload_file_from_buffer(self, request):
+        """上传文件, 根据用户的文件大小,选择单文件上传和分片上传策略
+
+        :param request:
+        :return:
+        """
+        assert isinstance(request, UploadFileFromBufferRequest)
+        check_params_ret = self._check_params(request)
+        if check_params_ret is not None:
+            return check_params_ret
+
+        data = request.get_data()
+        file_size = len(data)
+
+        suit_single_file_zie = 8 * 1024 * 1024
+        if file_size < suit_single_file_zie:
+            return self.upload_single_file_from_buffer(request)
+        else:
+            bucket = request.get_bucket_name()
+            cos_path = request.get_cos_path()
+            data = request.get_data()
+            slice_size = 1024 * 1024
+            biz_attr = request.get_biz_attr()
+            upload_slice_request = UploadSliceFileFromBufferRequest(bucket, cos_path, data, slice_size, biz_attr)
+            upload_slice_request.set_insert_only(request.get_insert_only())
+            return self.upload_slice_file_from_buffer(upload_slice_request)
+
+    def upload_single_file_from_buffer(self, request):
+        """ 单文件上传
+
+        :param request:
+        :return:
+        """
+        assert isinstance(request, UploadFileFromBufferRequest)
+        check_params_ret = self._check_params(request)
+        if check_params_ret is not None:
+            return check_params_ret
+
+        data = request.get_data()
+        file_size = len(data)
+        # 判断文件是否超过单文件最大上限, 如果超过则返回错误
+        # 并提示用户使用别的接口
+        if file_size > self.max_single_file:
+            return CosErr.get_err_msg(CosErr.NETWORK_ERROR, 'file is too big, please use upload_file interface')
+
+        auth = cos_auth.Auth(self._cred)
+        bucket = request.get_bucket_name()
+        cos_path = request.get_cos_path()
+        expired = int(time.time()) + self._expired_period
+        sign = auth.sign_more(bucket, cos_path, expired)
+
+        http_header = dict()
+        http_header['Authorization'] = sign
+        http_header['User-Agent'] = self._config.get_user_agent()
+
+        file_content = data
+
+        http_body = dict()
+        http_body['op'] = 'upload'
+        http_body['filecontent'] = file_content
+        http_body['sha'] = FileOp._sha1_content(file_content)
+        http_body['biz_attr'] = request.get_biz_attr()
+        http_body['insertOnly'] = str(request.get_insert_only())
+
+        timeout = self._config.get_timeout()
+        ret = self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+
+        if request.get_insert_only() != 0:
+            return ret
+
+        if ret[u'code'] == 0:
+            return ret
+
+        # try to delete object, and re-post request
+        del_request = DelFileRequest(bucket_name=request.get_bucket_name(), cos_path=request.get_cos_path())
+        ret = self.del_file(del_request)
+        if ret[u'code'] == 0:
+            return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+        else:
+            return ret
+
+    def _upload_slice_file_from_buffer(self, request):
+        assert isinstance(request, UploadSliceFileFromBufferRequest)
+        check_params_ret = self._check_params(request)
+        if check_params_ret is not None:
+            return check_params_ret
+
+        data = request.get_data()
+        slice_size = request.get_slice_size()
+        enable_sha1 = request.enable_sha1
+
+        request.sha1_list = None
+        request.sha1_content = None
+
+        control_ret = self._upload_slice_control_from_buffer(request)
+
+        # 表示控制分片已经产生错误信息
+        if control_ret[u'code'] != 0:
+            return control_ret
+
+        # 命中秒传
+        if u'access_url' in control_ret[u'data']:
+            return control_ret
+
+        data = request.get_data()
+        file_size = len(data)
+        if u'slice_size' in control_ret[u'data']:
+            slice_size = control_ret[u'data'][u'slice_size']
+        offset = 0
+        session = control_ret[u'data'][u'session']
+        # ?concurrency
+        if request._max_con <= 1 or (
+                u'serial_upload' in control_ret[u'data'] and control_ret[u'data'][u'serial_upload'] == 1):
+
+            logger.info("upload file serially")
+            slice_idx = 0
+
+            while offset < file_size:
+                file_content = data[offset:offset + slice_size]
+
+                data_ret = self._upload_slice_data(request, file_content, session, offset)
+
+                if data_ret[u'code'] == 0:
+                    if u'access_url' in data_ret[u'data']:
+                        return data_ret
+                else:
+                    return data_ret
+
+                offset += slice_size
+                slice_idx += 1
+        else:
+            logger.info('upload file concurrently')
+            from threadpool import SimpleThreadPool
+            pool = SimpleThreadPool(request._max_con)
+
+            slice_idx = 0
+
+            while offset < file_size:
+                file_content = data[offset:offset + slice_size]
+                pool.add_task(self._upload_slice_data, request, file_content, session, offset)
+
+                offset += slice_size
+                slice_idx += 1
+
+            pool.wait_completion()
+            result = pool.get_result()
+            if not result['success_all']:
+                return {u'code': 1, u'message': str(result)}
+
+        data_ret = self._upload_slice_finish_from_buffer(request, session, file_size)
+        return data_ret
+
+    def upload_slice_file_from_buffer(self, request):
+        """分片文件上传(串行)
+
+        :param request:
+        :return:
+        """
+        ret = self._upload_slice_file_from_buffer(request)
+
+        if ret[u'code'] == 0:
+            return ret
+
+        if request.get_insert_only() == 0:
+            del_request = DelFileRequest(request.get_bucket_name(), request.get_cos_path())
+            ret = self.del_file(del_request)
+            if ret[u'code'] == 0:
+                return self._upload_slice_file_from_buffer(request)
+            else:
+                return ret
+        else:
+            return ret
+
+    def _upload_slice_finish_from_buffer(self, request, session, filesize):
+        auth = cos_auth.Auth(self._cred)
+        bucket = request.get_bucket_name()
+        cos_path = request.get_cos_path()
+        expired = int(time.time()) + self._expired_period
+        sign = auth.sign_more(bucket, cos_path, expired)
+
+        http_header = dict()
+        http_header['Authorization'] = sign
+        http_header['User-Agent'] = self._config.get_user_agent()
+
+        http_body = dict()
+        http_body['op'] = "upload_slice_finish"
+        http_body['session'] = session
+        http_body['filesize'] = str(filesize)
+        if request.sha1_list is not None:
+            http_body['sha'] = request.sha1_list[-1]["datasha"]
+        timeout = self._config.get_timeout()
+
+        return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+
+    def _upload_slice_control_from_buffer(self, request):
+        """串行分片第一步, 上传控制分片
+
+        :param request:
+        :return:
+        """
+        auth = cos_auth.Auth(self._cred)
+        bucket = request.get_bucket_name()
+        cos_path = request.get_cos_path()
+        expired = int(time.time()) + self._expired_period
+        sign = auth.sign_more(bucket, cos_path, expired)
+
+        http_header = dict()
+        http_header['Authorization'] = sign
+        http_header['User-Agent'] = self._config.get_user_agent()
+
+        data = request.get_data()
+        file_size = len(data)
+        slice_size = request.get_slice_size()
+        biz_atrr = request.get_biz_attr()
+
+        http_body = dict()
+        http_body['op'] = 'upload_slice_init'
+        if request.enable_sha1:
+            http_body['sha'] = request.sha1_list[-1]["datasha"]
+            http_body['uploadparts'] = json.dumps(request.sha1_list)
+        http_body['filesize'] = str(file_size)
+        http_body['slice_size'] = str(slice_size)
+        http_body['biz_attr'] = biz_atrr
+        http_body['insertOnly'] = str(request.get_insert_only())
+
+        timeout = self._config.get_timeout()
+        return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
+
     def __download_url(self, uri, filename, headers):
         session = self._http_session
 
@@ -567,8 +797,8 @@ class FileOp(BaseOp):
             return {u'code': 0, u'message': "download successfully"}
         except Exception as e:
             return {u'code': 1, u'message': "download failed, exception: " + str(e)}
-
-    def __download_object_url(self, uri, headers):
+ 
+   def __download_object_url(self, uri, headers):
         session = self._http_session
 
         ret = session.get(uri, stream=True, timeout=30, headers=headers)
@@ -587,7 +817,6 @@ class FileOp(BaseOp):
 
         ret = self.__download_object_url(url, request._custom_headers)
         return ret
-
     def __move_file(self, request):
 
         auth = cos_auth.Auth(self._cred)

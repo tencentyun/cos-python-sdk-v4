@@ -254,6 +254,147 @@ class UploadSliceFileRequest(UploadFileRequest):
         return self._param_check.check_slice_size(self._slice_size)
 
 
+class UploadFileFromBufferRequest(BaseRequest):
+    """
+    UploadFileFromBufferRequest  内存单文件上传请求
+    """
+
+    def __init__(self, bucket_name, cos_path, data, biz_attr=u'', insert_only=1):
+        """
+
+        :param bucket_name:  bucket的名称
+        :param cos_path: cos的绝对路径(目的路径), 从bucket根/开始
+        :param data: 文件内容
+        :param biz_attr: 文件的属性
+        :param insert_only: 是否覆盖写, 0覆盖, 1不覆盖,返回错误
+        """
+        super(UploadFileFromBufferRequest, self).__init__(bucket_name, cos_path)
+        self._data = data
+        self._biz_attr = biz_attr
+        self._insert_only = insert_only
+
+    def set_data(self, data):
+        """设置local_path
+
+        :param local_path:
+        :return:
+        """
+        self._data = data
+
+    def get_data(self):
+        """获取local_path
+
+        :return:
+        """
+        return self._data
+
+    def set_biz_attr(self, biz_attr):
+        """设置biz_attr
+
+        :param biz_attr:
+        :return:
+        """
+        self._biz_attr = biz_attr
+
+    def get_biz_attr(self):
+        """获取biz_attr
+
+        :return:
+        """
+        return self._biz_attr
+
+    def set_insert_only(self, insert_only):
+        """设置insert_only，0表示如果文件存在, 则覆盖
+
+        :param insert_only:
+        :return:
+        """
+        self._insert_only = insert_only
+
+    def get_insert_only(self):
+        """获取insert_only
+
+        :return:
+        """
+        return self._insert_only
+
+    def check_params_valid(self):
+        """检查参数是否有效
+
+        :return:
+        """
+        if not super(UploadFileFromBufferRequest, self).check_params_valid():
+            return False
+        if not self._param_check.check_cos_path_valid(self._cos_path, is_file_path=True):
+            return False
+        if not self._param_check.check_param_unicode('biz_attr', self._biz_attr):
+            return False
+        if not self._param_check.check_param_int('insert_only', self._insert_only):
+            return False
+        return self._param_check.check_insert_only(self._insert_only)
+
+
+class UploadSliceFileFromBufferRequest(UploadFileFromBufferRequest):
+    """
+    UploadSliceFileFromBufferRequest  内存分片文件上传请求
+    """
+
+    def __init__(self, bucket_name, cos_path, data, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1):
+        """
+
+        :param bucket_name: bucket的名称
+        :param cos_path: cos的绝对路径(目的路径), 从bucket根/开始
+        :param data: 文件内容
+        :param slice_size: 文件的属性
+        :param biz_attr: 分片大小(字节, 默认1MB)
+        :param enable_sha1: 是否启用sha1校验
+        """
+        super(UploadSliceFileFromBufferRequest, self).__init__(bucket_name, cos_path, data, biz_attr)
+        self._slice_size = slice_size
+        self._enable_sha1 = enable_sha1
+        self._max_con = max_con
+
+    @property
+    def enable_sha1(self):
+        return self._enable_sha1
+
+    @enable_sha1.setter
+    def enable_sha1(self, val):
+        if val in (True, False):
+            self._enable_sha1 = val
+        else:
+            raise ValueError("enable_sha1 should be True/False")
+
+    def set_slice_size(self, slice_size):
+        """设置分片大小
+
+        :param slice_size:
+        :return:
+        """
+        self._slice_size = slice_size
+
+    def get_slice_size(self):
+        """获取分片大小
+
+        :return:
+        """
+        return self._slice_size
+
+    def check_params_valid(self):
+        """检查参数是否有效
+
+        :return:
+        """
+        if not super(UploadSliceFileFromBufferRequest, self).check_params_valid():
+            return False
+
+        if self._enable_sha1 and self._slice_size != 1024*1024:
+            self._param_check._err_tips = 'slice_size is invalid, slice must be 1MB with enable_sha1'
+            return False
+
+        return self._param_check.check_slice_size(self._slice_size)
+
+
 class UpdateFolderRequest(BaseRequest):
     """UpdateFolderRequest 更新目录请求"""
 
@@ -605,22 +746,6 @@ class DownloadFileRequest(BaseRequest):
 
         from os import path
         if path.exists(self._local_filename):
-            return False
-
-
-class DownloadObjectRequest(BaseRequest):
-    def __init__(self, bucket_name, cos_path, range_start=None, range_end=None, *args, **kwargs):
-        super(DownloadObjectRequest, self).__init__(bucket_name, cos_path)
-
-        self._range_start = range_start
-        self._range_end = range_end
-
-        self._custom_headers = None
-        if 'headers' in kwargs:
-            self._custom_headers = kwargs['headers']
-
-    def check_params_valid(self):
-        if not super(DownloadObjectRequest, self).check_params_valid():
             return False
 
 
