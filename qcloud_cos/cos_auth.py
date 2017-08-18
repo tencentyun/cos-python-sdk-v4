@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 import random
 import time
@@ -13,7 +14,7 @@ try:
 except ImportError:
     from urllib.parse import quote  # Python 3+
 
-from .helper import smart_str, smart_bytes
+from qcloud_cos.helper import smart_str, smart_bytes
 
 
 class Auth(object):

@@ -103,8 +103,6 @@ class BaseOp(object):
         """
         url = self._build_url(smart_str(bucket), smart_str(cos_path))
         logger.debug("sending request, method: %s, bucket: %s, cos_path: %s" % (method, bucket, cos_path))
-        print('url' * 10)
-        print(url)
 
         try:
             if method == 'POST':

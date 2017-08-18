@@ -29,10 +29,7 @@ class ParamCheck(object):
         if param_value is None:
             self._err_tips = param_name + ' is None!'
             return False
-        if six.PY3:
-            is_unicode = isinstance(param_value, str)
-        else:
-            is_unicode = isinstance(param_value, unicode)
+        is_unicode = isinstance(param_value, six.string_types)
         if not is_unicode:
             self._err_tips = param_name + ' is not unicode!'
             return False
