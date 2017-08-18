@@ -7,24 +7,31 @@ import json
 import hashlib
 import urllib
 from contextlib import closing
-import cos_auth
-from cos_err import CosErr
-from cos_request import UploadFileRequest
-from cos_request import UploadSliceFileRequest
-from cos_request import UploadFileFromBufferRequest
-from cos_request import UploadSliceFileFromBufferRequest
-from cos_request import UpdateFileRequest
-from cos_request import DelFileRequest
-from cos_request import StatFileRequest
-from cos_request import CreateFolderRequest
-from cos_request import UpdateFolderRequest
-from cos_request import StatFolderRequest
-from cos_request import DelFolderRequest
-from cos_request import ListFolderRequest, DownloadFileRequest, DownloadObjectRequest, MoveFileRequest
-from cos_common import Sha1Util
-
 from logging import getLogger
 from traceback import format_exc
+
+try:
+    from urllib import quote  # Python 2.X
+except ImportError:
+    from urllib.parse import quote  # Python 3+
+
+from .cos_auth import Auth
+from .cos_err import CosErr
+from .cos_request import UploadFileRequest
+from .cos_request import UploadSliceFileRequest
+from .cos_request import UploadFileFromBufferRequest
+from .cos_request import UploadSliceFileFromBufferRequest
+from .cos_request import UpdateFileRequest
+from .cos_request import DelFileRequest
+from .cos_request import StatFileRequest
+from .cos_request import CreateFolderRequest
+from .cos_request import UpdateFolderRequest
+from .cos_request import StatFolderRequest
+from .cos_request import DelFolderRequest
+from .cos_request import ListFolderRequest, DownloadFileRequest, DownloadObjectRequest, MoveFileRequest
+from .cos_common import Sha1Util
+from .helper import smart_str
+
 
 logger = getLogger(__name__)
 
@@ -70,10 +77,9 @@ class BaseOp(object):
         :param cos_path:
         :return:
         """
-        bucket = bucket.encode('utf8')
-        end_point = self._config.get_endpoint().rstrip('/').encode('utf8')
+        end_point = self._config.get_endpoint().rstrip('/')
         appid = self._cred.get_appid()
-        cos_path = urllib.quote(cos_path.encode('utf8'), '~/')
+        cos_path = quote(cos_path, '~/')
         url = '%s/%s/%s%s' % (end_point, appid, bucket, cos_path)
         return url
 
@@ -81,7 +87,7 @@ class BaseOp(object):
         # Only support http now
         appid = self._cred.get_appid()
         hostname = self._config.get_download_hostname()
-        cos_path = urllib.quote(cos_path)
+        cos_path = quote(cos_path)
         url_tmpl = 'http://{bucket}-{appid}.{hostname}{cos_path}?sign={sign}'
 
         return url_tmpl.format(bucket=bucket, appid=appid, hostname=hostname, cos_path=cos_path, sign=sign)
@@ -95,8 +101,10 @@ class BaseOp(object):
         :param args:
         :return:
         """
-        url = self._build_url(bucket, cos_path)
+        url = self._build_url(smart_str(bucket), smart_str(cos_path))
         logger.debug("sending request, method: %s, bucket: %s, cos_path: %s" % (method, bucket, cos_path))
+        print('url' * 10)
+        print(url)
 
         try:
             if method == 'POST':
@@ -105,6 +113,7 @@ class BaseOp(object):
                 http_resp = self._http_session.get(url, verify=False, **kwargs)
 
             status_code = http_resp.status_code
+            print(http_resp, http_resp.headers)
             if status_code < 500:
                 return http_resp.json()
             else:
@@ -138,7 +147,7 @@ class BaseOp(object):
         if check_params_ret is not None:
             return check_params_ret
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         sign = auth.sign_once(bucket, cos_path)
@@ -163,7 +172,7 @@ class BaseOp(object):
         if check_params_ret is not None:
             return check_params_ret
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -218,7 +227,7 @@ class FileOp(BaseOp):
             return check_params_ret
 
         logger.debug("params verify successfully")
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         sign = auth.sign_once(bucket, cos_path)
@@ -306,7 +315,7 @@ class FileOp(BaseOp):
         if file_size > self.max_single_file:
             return CosErr.get_err_msg(CosErr.NETWORK_ERROR, 'file is too big, please use upload_file interface')
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -444,7 +453,7 @@ class FileOp(BaseOp):
             return ret
 
     def _upload_slice_finish(self, request, session, filesize):
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -470,7 +479,7 @@ class FileOp(BaseOp):
         :param request:
         :return:
         """
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -509,7 +518,7 @@ class FileOp(BaseOp):
         """
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         expired = int(time.time()) + self._expired_period
         sign = auth.sign_more(bucket, cos_path, expired)
 
@@ -579,7 +588,7 @@ class FileOp(BaseOp):
         if file_size > self.max_single_file:
             return CosErr.get_err_msg(CosErr.NETWORK_ERROR, 'file is too big, please use upload_file interface')
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -708,7 +717,7 @@ class FileOp(BaseOp):
             return ret
 
     def _upload_slice_finish_from_buffer(self, request, session, filesize):
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -734,7 +743,7 @@ class FileOp(BaseOp):
         :param request:
         :return:
         """
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -788,7 +797,7 @@ class FileOp(BaseOp):
     def download_file(self, request):
         assert isinstance(request, DownloadFileRequest)
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         sign = auth.sign_download(request.get_bucket_name(), request.get_cos_path(), self._config.get_sign_expired())
         url = self.build_download_url(request.get_bucket_name(), request.get_cos_path(), sign)
         logger.info("Uri is %s" % url)
@@ -810,7 +819,7 @@ class FileOp(BaseOp):
     def download_object(self, request):
         assert isinstance(request, DownloadObjectRequest)
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         sign = auth.sign_download(request.get_bucket_name(), request.get_cos_path(), self._config.get_sign_expired())
         url = self.build_download_url(request.get_bucket_name(), request.get_cos_path(), sign)
         logger.info("Uri is %s" % url)
@@ -820,7 +829,7 @@ class FileOp(BaseOp):
 
     def __move_file(self, request):
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         sign = auth.sign_once(bucket, cos_path)
@@ -859,7 +868,7 @@ class FolderOp(BaseOp):
         if check_params_ret is not None:
             return check_params_ret
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         sign = auth.sign_once(bucket, cos_path)
@@ -905,7 +914,7 @@ class FolderOp(BaseOp):
         if check_params_ret is not None:
             return check_params_ret
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         cos_path = request.get_cos_path()
         expired = int(time.time()) + self._expired_period
@@ -940,7 +949,7 @@ class FolderOp(BaseOp):
 
         http_body['context'] = request.get_context()
 
-        auth = cos_auth.Auth(self._cred)
+        auth = Auth(self._cred)
         bucket = request.get_bucket_name()
         list_path = request.get_cos_path() + request.get_prefix()
         expired = int(time.time()) + self._expired_period

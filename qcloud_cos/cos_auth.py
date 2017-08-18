@@ -3,24 +3,31 @@
 
 import random
 import time
-import urllib
 import hmac
 import hashlib
 import binascii
 import base64
 
+try:
+    from urllib import quote  # Python 2.X
+except ImportError:
+    from urllib.parse import quote  # Python 3+
+
+from .helper import smart_str, smart_bytes
+
 
 class Auth(object):
+
     def __init__(self, cred):
         self.cred = cred
 
     def app_sign(self, bucket, cos_path, expired, upload_sign=True):
         appid = self.cred.get_appid()
-        bucket = bucket.encode('utf8')
-        secret_id = self.cred.get_secret_id().encode('utf8')
+        bucket = smart_str(bucket)
+        secret_id = smart_str(self.cred.get_secret_id())
         now = int(time.time())
         rdm = random.randint(0, 999999999)
-        cos_path = urllib.quote(cos_path.encode('utf8'), '~/')
+        cos_path = quote(smart_str(cos_path), '~/')
         if upload_sign:
             fileid = '/%s/%s%s' % (appid, bucket, cos_path)
         else:
@@ -32,11 +39,13 @@ class Auth(object):
         sign_tuple = (appid, secret_id, expired, now, rdm, fileid, bucket)
 
         plain_text = 'a=%s&k=%s&e=%d&t=%d&r=%d&f=%s&b=%s' % sign_tuple
-        secret_key = self.cred.get_secret_key().encode('utf8')
-        sha1_hmac = hmac.new(secret_key, plain_text, hashlib.sha1)
+        secret_key = smart_str(self.cred.get_secret_key())
+        sha1_hmac = hmac.new(smart_bytes(secret_key),
+                             smart_bytes(plain_text),
+                             hashlib.sha1)
         hmac_digest = sha1_hmac.hexdigest()
         hmac_digest = binascii.unhexlify(hmac_digest)
-        sign_hex = hmac_digest + plain_text
+        sign_hex = hmac_digest + smart_bytes(plain_text)
         sign_base64 = base64.b64encode(sign_hex)
         return sign_base64
 

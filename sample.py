@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from qcloud_cos import CosClient
@@ -24,14 +23,14 @@ logger = logging.getLogger(__name__)
 def cos_demo():
     # 设置用户属性, 包括appid, secret_id和secret_key
     # 这些属性可以在cos控制台获取(https://console.qcloud.com/cos)
-    appid = 111               # 替换为用户的appid
-    secret_id = u''         # 替换为用户的secret_id
-    secret_key = u''         # 替换为用户的secret_key
+    appid = 123               # 替换为用户的appid
+    secret_id = u''           # 替换为用户的secret_id
+    secret_key = u''          # 替换为用户的secret_key
     region = "shanghai" #           # 替换为用户的region，目前可以为 shanghai/guangzhou
     cos_client = CosClient(appid, secret_id, secret_key, region)
 
     # 设置要操作的bucket
-    bucket = u''
+    bucket = u'name'
 
     ############################################################################
     # 文件操作                                                                 #
@@ -84,7 +83,7 @@ def cos_demo():
     request = StatFileRequest(bucket, u'/sample_file.txt')
     stat_file_ret = cos_client.stat_file(request)
     logger.info('stat file, return message: ' + str(stat_file_ret))
-    
+
     # 6. 从内存上传文件
     with open("111.txt", 'rb') as File:
         data = File.read()
