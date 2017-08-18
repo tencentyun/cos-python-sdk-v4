@@ -19,29 +19,28 @@ from qcloud_cos.helper import smart_str, smart_bytes
 
 class Auth(object):
 
-    def __init__(self, cred):
-        self.cred = cred
+    def __init__(self, cred=None, appid=None, secret_id=None, secret_key=None):
+        self.appid = appid or smart_str(cred.get_appid())
+        self.secret_id = secret_id or smart_str(cred.get_secret_id())
+        self.secret_key = secret_key or smart_str(cred.get_secret_key())
 
     def app_sign(self, bucket, cos_path, expired, upload_sign=True):
-        appid = self.cred.get_appid()
         bucket = smart_str(bucket)
-        secret_id = smart_str(self.cred.get_secret_id())
         now = int(time.time())
         rdm = random.randint(0, 999999999)
         cos_path = quote(smart_str(cos_path), '~/')
         if upload_sign:
-            fileid = '/%s/%s%s' % (appid, bucket, cos_path)
+            fileid = '/%s/%s%s' % (self.appid, bucket, cos_path)
         else:
             fileid = cos_path
 
         if expired != 0 and expired < now:
             expired = now + expired
 
-        sign_tuple = (appid, secret_id, expired, now, rdm, fileid, bucket)
+        sign_tuple = (self.appid, self.secret_id, expired, now, rdm, fileid, bucket)
 
         plain_text = 'a=%s&k=%s&e=%d&t=%d&r=%d&f=%s&b=%s' % sign_tuple
-        secret_key = smart_str(self.cred.get_secret_key())
-        sha1_hmac = hmac.new(smart_bytes(secret_key),
+        sha1_hmac = hmac.new(smart_bytes(self.secret_key),
                              smart_bytes(plain_text),
                              hashlib.sha1)
         hmac_digest = sha1_hmac.hexdigest()
