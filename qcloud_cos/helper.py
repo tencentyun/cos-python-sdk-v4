@@ -25,7 +25,9 @@ safe_char = _always_safe
 
 if PY2:
     text_type = unicode
-    iteritems = lambda d, *args, **kwargs: d.iteritems(*args, **kwargs)
+
+    def iteritems(d, *args, **kwargs):
+        return d.iteritems(*args, **kwargs)
 
     def to_native(x, charset=sys.getdefaultencoding(), errors='strict'):
         if x is None or isinstance(x, str):
@@ -33,7 +35,9 @@ if PY2:
         return x.encode(charset, errors)
 else:
     text_type = str
-    iteritems = lambda d, *args, **kwargs: iter(d.items(*args, **kwargs))
+
+    def iteritems(d, *args, **kwargs):
+        return iter(d.items(*args, **kwargs))
 
     def to_native(x, charset=sys.getdefaultencoding(), errors='strict'):
         if x is None or isinstance(x, str):
