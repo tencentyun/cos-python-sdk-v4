@@ -212,19 +212,3 @@ This is suitable for writing to sys.stdout (for instance).
 force_str.__doc__ = """
 Apply force_text in Python 3 and force_bytes in Python 2.
 """
-
-def iter_multi_items(mapping):
-    """
-    Iterates over the items of a mapping yielding keys and values
-    without dropping any from more complex structures.
-    """
-    if isinstance(mapping, dict):
-        for key, value in iteritems(mapping):
-            if isinstance(value, (tuple, list)):
-                for value in value:
-                    yield key, value
-            else:
-                yield key, value
-    else:
-        for item in mapping:
-            yield item
