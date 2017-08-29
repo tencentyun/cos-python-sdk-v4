@@ -1,13 +1,17 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
 import re
 
+import six
+
 
 class ParamCheck(object):
-    """BaseRequest基本类型的请求"""
+    """
+    BaseRequest基本类型的请求
+    """
+
     def __init__(self):
-        self._err_tips = u''
+        self._err_tips = None
 
     def get_err_tips(self):
         """获取错误信息
@@ -18,7 +22,6 @@ class ParamCheck(object):
 
     def check_param_unicode(self, param_name, param_value):
         """检查参数是否是unicode
-
         :param param_name: param_name 参数名
         :param param_value: param_value 参数值
         :return:
@@ -26,14 +29,14 @@ class ParamCheck(object):
         if param_value is None:
             self._err_tips = param_name + ' is None!'
             return False
-        if not isinstance(param_value, unicode):
+        is_unicode = isinstance(param_value, six.string_types)
+        if not is_unicode:
             self._err_tips = param_name + ' is not unicode!'
             return False
         return True
 
     def check_param_int(self, param_name, param_value):
         """检查参数是否是int
-
         :param param_name: param_name 参数名
         :param param_value: param_value 参数值
         :return:
@@ -55,15 +58,15 @@ class ParamCheck(object):
         :param is_file_path:
         :return: True for valid path, other False
         """
-        if cos_path[0] != u'/':
+        if cos_path[0] != '/':
             self._err_tips = 'cos path must start with /'
             return False
 
         last_letter = cos_path[len(cos_path) - 1]
-        if is_file_path and last_letter == u'/':
+        if is_file_path and last_letter == '/':
             self._err_tips = 'for file operation, cos_path must not end with /'
             return False
-        elif not is_file_path and last_letter != u'/':
+        elif not is_file_path and last_letter != '/':
             self._err_tips = 'for folder operation, cos_path must end with /'
             return False
         else:
@@ -88,7 +91,7 @@ class ParamCheck(object):
         :param cos_path:
         :return:
         """
-        if cos_path == u'/':
+        if cos_path == '/':
             self._err_tips = 'bucket operation is not supported by sdk,'
             ' please use cos console: https://console.qcloud.com/cos'
             return False
@@ -159,7 +162,7 @@ class ParamCheck(object):
         :param authority:
         :return:
         """
-        if authority != u''and authority != u'eInvalid' and authority != u'eWRPrivate' and authority != u'eWPrivateRPublic':
+        if authority not in set(['', 'eInvalid', 'eWRPrivate', 'eWPrivateRPublic']):
             self._err_tips = 'file authority valid value is: eInvalid, eWRPrivate, eWPrivateRPublic'
             return False
         else:
@@ -177,7 +180,7 @@ class ParamCheck(object):
                 return False
             if not self.check_param_unicode('x-cos-meta-value', x_cos_meta_dict[key]):
                 return False
-            if key[0:prefix_len] != u'x-cos-meta-':
+            if key[0:prefix_len] != 'x-cos-meta-':
                 self._err_tips = 'x-cos-meta key must start with x-cos-meta-'
                 return False
             if len(key) == prefix_len:
@@ -218,7 +221,7 @@ class ParamCheck(object):
         :param list_pattern: 合法取值eListBoth, eListDirOnly, eListFileOnly
         :return:
         """
-        if list_pattern != u'eListBoth' and list_pattern != u'eListDirOnly' and list_pattern != u'eListFileOnly':
+        if list_pattern not in set(['eListBoth', 'eListDirOnly', 'eListFileOnly']):
             self._err_tips = 'list pattern is invalid, please use eListBoth or eListDirOnly or eListFileOnly'
             return False
         else:
