@@ -81,7 +81,7 @@ class BaseOp(object):
         # Only support http now
         appid = self._cred.get_appid()
         hostname = self._config.get_download_hostname()
-        cos_path = urllib.quote(cos_path)
+        cos_path = urllib.quote(cos_path.encode('utf8'), '~/')
         url_tmpl = 'http://{bucket}-{appid}.{hostname}{cos_path}?sign={sign}'
 
         return url_tmpl.format(bucket=bucket, appid=appid, hostname=hostname, cos_path=cos_path, sign=sign)
