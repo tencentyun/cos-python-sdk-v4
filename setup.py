@@ -5,7 +5,7 @@ import sys
 from setuptools import setup, find_packages
 
 setup(name='qcloud_cos_v4',
-      version='0.0.20',
+      version='0.0.21',
       description='python sdk for tencent qcloud cos v4.0',
       long_description=open('README.rst', 'r').read(),
       license='MIT License',
