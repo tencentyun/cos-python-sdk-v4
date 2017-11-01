@@ -76,7 +76,7 @@ __________
     # 4. 更新文件属性
     request = UpdateFileRequest(bucket, u'/sample_file.txt')
 
-    request.set_biz_attr(u'这是个demo文件')           # 设置文件biz_attr属性
+    request.set_biz_attr(u'this is demo file')        # 设置文件biz_attr属性,不支持中文
     request.set_authority(u'eWRPrivate')              # 设置文件的权限
     request.set_cache_control(u'cache_xxx')           # 设置Cache-Control
     request.set_content_type(u'application/text')     # 设置Content-Type
@@ -122,7 +122,7 @@ __________
     print 'create folder ret:', create_folder_ret
 
     # 2. 更新目录的biz_attr属性
-    request = UpdateFolderRequest(bucket, u'/sample_folder/', u'这是一个测试目录')
+    request = UpdateFolderRequest(bucket, u'/sample_folder/', u'this is a test folder') # biz_attr不支持中文
     update_folder_ret = cos_client.update_folder(request)
     print 'update folder ret:', repr(update_folder_ret)
 
