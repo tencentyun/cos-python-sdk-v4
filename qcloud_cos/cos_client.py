@@ -2,24 +2,24 @@
 # -*- coding: utf-8 -*-
 
 import requests
-from cos_cred import CredInfo
-from cos_config import CosConfig
-from cos_op import FileOp
-from cos_op import FolderOp
-from cos_request import UploadFileRequest
-from cos_request import UploadSliceFileRequest
-from cos_request import UploadFileFromBufferRequest
-from cos_request import UploadSliceFileFromBufferRequest
-from cos_request import UpdateFileRequest
-from cos_request import UpdateFolderRequest
-from cos_request import DelFileRequest
-from cos_request import DelFolderRequest
-from cos_request import CreateFolderRequest
-from cos_request import StatFolderRequest
-from cos_request import StatFileRequest
-from cos_request import ListFolderRequest
-from cos_request import DownloadFileRequest
-from cos_request import DownloadObjectRequest
+from .cos_cred import CredInfo
+from .cos_config import CosConfig
+from .cos_op import FileOp
+from .cos_op import FolderOp
+from .cos_request import UploadFileRequest
+from .cos_request import UploadSliceFileRequest
+from .cos_request import UploadFileFromBufferRequest
+from .cos_request import UploadSliceFileFromBufferRequest
+from .cos_request import UpdateFileRequest
+from .cos_request import UpdateFolderRequest
+from .cos_request import DelFileRequest
+from .cos_request import DelFolderRequest
+from .cos_request import CreateFolderRequest
+from .cos_request import StatFolderRequest
+from .cos_request import StatFileRequest
+from .cos_request import ListFolderRequest
+from .cos_request import DownloadFileRequest
+from .cos_request import DownloadObjectRequest
 try:
     from requests.packages.urllib3.exceptions import InsecureRequestWarning
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -38,7 +38,7 @@ class CosClient(object):
         :param secret_key: secret_key
         """
         self._cred = CredInfo(appid, secret_id, secret_key)
-        self._config = CosConfig(region=region)
+        self._config = CosConfig(region=region, enable_https=True)
         self._http_session = requests.session()
         self._file_op = FileOp(self._cred, self._config, self._http_session)
         self._folder_op = FolderOp(self._cred, self._config, self._http_session)
