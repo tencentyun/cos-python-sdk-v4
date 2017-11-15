@@ -111,7 +111,7 @@ class BaseOp(object):
                 http_resp = self._http_session.get(url, verify=False, **kwargs)
 
             status_code = http_resp.status_code
-            print(http_resp, http_resp.headers)
+            logger.debug('%r, Header: %r', http_resp, http_resp.headers)
             if status_code < 500:
                 return http_resp.json()
             else:
