@@ -669,18 +669,20 @@ class DelFolderRequest(BaseRequest):
 class ListFolderRequest(BaseRequest):
     """ListFolderRequest 获取目录列表的请求"""
 
-    def __init__(self, bucket_name, cos_path, num=199, prefix=u'', context=u''):
+    def __init__(self, bucket_name, cos_path, num=199, prefix=u'', context=u'', delimiter=u''):
         """
         :param bucket_name: bucket的名称
         :param cos_path: cos的绝对路径, 从bucket根/开始
         :param num: 搜索数量
         :param prefix: 搜索前缀
         :param context: 搜索上下文
+        :param delimiter: 定义分隔符
         """
         super(ListFolderRequest, self).__init__(bucket_name, cos_path)
         self._num = num
         self._prefix = prefix
         self._context = context
+        self._delimiter = delimiter
 
     def set_num(self, num):
         """设置List数量
@@ -717,6 +719,14 @@ class ListFolderRequest(BaseRequest):
         """获取搜索上下文"""
         return self._context
 
+    def set_delimiter(self, delimiter):
+        """设置分割符"""
+        self._delimiter = delimiter
+
+    def get_delimiter(self):
+        """获取分隔符"""
+        return self._delimiter
+
     def check_params_valid(self):
         """检查参数是否有效"""
         if not super(ListFolderRequest, self).check_params_valid():
@@ -724,6 +734,8 @@ class ListFolderRequest(BaseRequest):
         if not self._param_check.check_cos_path_valid(self._cos_path, is_file_path=False):
             return False
         if not self._param_check.check_param_unicode('prefix', self._prefix):
+            return False
+        if not self._param_check.check_param_unicode('delimeter', self._delimiter):
             return False
         return self._param_check.check_param_unicode('context', self._context)
 
