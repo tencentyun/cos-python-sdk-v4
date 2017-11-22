@@ -47,7 +47,7 @@ class Auth(object):
         hmac_digest = binascii.unhexlify(hmac_digest)
         sign_hex = hmac_digest + smart_bytes(plain_text)
         sign_base64 = base64.b64encode(sign_hex)
-        return sign_base64
+        return sign_base64.decode('utf-8')
 
     def sign_once(self, bucket, cos_path):
         """单次签名(针对删除和更新操作)
