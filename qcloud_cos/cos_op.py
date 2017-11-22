@@ -110,7 +110,7 @@ class BaseOp(object):
             else:
                 logger.warning("request failed, response message: %s" % http_resp.text)
                 err_detail = 'url:%s, status_code:%d' % (url, status_code)
-                return CosErr.get_err_msg(CosErr.NETWORK_ERROR, err_detail)
+                return CosErr.get_err_msg(CosErr.NETWORK_ERROR, err_detail, status_code)
         except Exception as e:
             logger.exception("request failed, return SERVER_ERROR")
             err_detail = 'url:%s, exception:%s traceback:%s' % (url, str(e), format_exc())

@@ -10,5 +10,5 @@ class CosErr(object):
     UNKNOWN_ERROR = -4  # 未知错误
 
     @staticmethod
-    def get_err_msg(errcode, err_info):
-        return {u'code': errcode, u'message': err_info}
+    def get_err_msg(errcode, err_info, status_code = None):
+        return {u'code': errcode, u'message': err_info, u'status_code': status_code}
