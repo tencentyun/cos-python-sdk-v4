@@ -114,7 +114,7 @@ class UploadFileRequest(BaseRequest):
     UploadFileRequest  单文件上传请求
     """
 
-    def __init__(self, bucket_name, cos_path, local_path, biz_attr=u'', insert_only=1):
+    def __init__(self, bucket_name, cos_path, local_path, biz_attr=u'', insert_only=1, verify_sha1=False):
         """
 
         :param bucket_name:  bucket的名称
@@ -122,11 +122,13 @@ class UploadFileRequest(BaseRequest):
         :param local_path: 上传的本地文件路径(源路径)
         :param biz_attr: 文件的属性
         :param insert_only: 是否覆盖写, 0覆盖, 1不覆盖,返回错误
+        :param verify_sha1: 分片上传是否带sha1上传,默认为False
         """
         super(UploadFileRequest, self).__init__(bucket_name, cos_path)
         self._local_path = local_path.strip()
         self._biz_attr = biz_attr
         self._insert_only = insert_only
+        self._verify_sha1 = verify_sha1
 
     def set_local_path(self, local_path):
         """设置local_path
@@ -173,6 +175,21 @@ class UploadFileRequest(BaseRequest):
         """
         return self._insert_only
 
+    def set_verify_sha1(self, verify_sha1):
+        """设置enable_sha1
+
+        :param verify_sha1:
+        :return:
+        """
+        self._verify_sha1 = verify_sha1
+
+    def get_verify_sha1(self):
+        """获取verify_sha1
+
+        :return:
+        """
+        return self._verify_sha1
+
     def check_params_valid(self):
         """检查参数是否有效
 
@@ -198,7 +215,7 @@ class UploadSliceFileRequest(UploadFileRequest):
     UploadSliceFileRequest  分片文件上传请求
     """
 
-    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1):
+    def __init__(self, bucket_name, cos_path, local_path, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1, insert_only=1):
         """
 
         :param bucket_name: bucket的名称
@@ -207,8 +224,9 @@ class UploadSliceFileRequest(UploadFileRequest):
         :param slice_size: 文件的属性
         :param biz_attr: 分片大小(字节, 默认1MB)
         :param enable_sha1: 是否启用sha1校验
+        :param insert_only: 是否覆盖,默认为1不覆盖
         """
-        super(UploadSliceFileRequest, self).__init__(bucket_name, cos_path, local_path, biz_attr)
+        super(UploadSliceFileRequest, self).__init__(bucket_name, cos_path, local_path, biz_attr, insert_only)
         self._slice_size = slice_size
         self._enable_sha1 = enable_sha1
         self._max_con = max_con
@@ -259,7 +277,7 @@ class UploadFileFromBufferRequest(BaseRequest):
     UploadFileFromBufferRequest  内存单文件上传请求
     """
 
-    def __init__(self, bucket_name, cos_path, data, biz_attr=u'', insert_only=1):
+    def __init__(self, bucket_name, cos_path, data, biz_attr=u'', insert_only=1, verify_sha1=False):
         """
 
         :param bucket_name:  bucket的名称
@@ -272,6 +290,7 @@ class UploadFileFromBufferRequest(BaseRequest):
         self._data = data
         self._biz_attr = biz_attr
         self._insert_only = insert_only
+        self._verify_sha1 = verify_sha1
 
     def set_data(self, data):
         """设置local_path
@@ -318,6 +337,21 @@ class UploadFileFromBufferRequest(BaseRequest):
         """
         return self._insert_only
 
+    def set_verify_sha1(self, verify_sha1):
+        """设置enable_sha1
+
+        :param verify_sha1:
+        :return:
+        """
+        self._verify_sha1 = verify_sha1
+
+    def get_verify_sha1(self):
+        """获取verify_sha1
+
+        :return:
+        """
+        return self._verify_sha1
+
     def check_params_valid(self):
         """检查参数是否有效
 
@@ -339,7 +373,7 @@ class UploadSliceFileFromBufferRequest(UploadFileFromBufferRequest):
     UploadSliceFileFromBufferRequest  内存分片文件上传请求
     """
 
-    def __init__(self, bucket_name, cos_path, data, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1):
+    def __init__(self, bucket_name, cos_path, data, slice_size=1024*1024, biz_attr=u'', enable_sha1=False, max_con=1, insert_only=1):
         """
 
         :param bucket_name: bucket的名称
@@ -348,8 +382,9 @@ class UploadSliceFileFromBufferRequest(UploadFileFromBufferRequest):
         :param slice_size: 文件的属性
         :param biz_attr: 分片大小(字节, 默认1MB)
         :param enable_sha1: 是否启用sha1校验
+        :param insert_only: 是否覆盖,默认为1不覆盖
         """
-        super(UploadSliceFileFromBufferRequest, self).__init__(bucket_name, cos_path, data, biz_attr)
+        super(UploadSliceFileFromBufferRequest, self).__init__(bucket_name, cos_path, data, biz_attr, insert_only)
         self._slice_size = slice_size
         self._enable_sha1 = enable_sha1
         self._max_con = max_con

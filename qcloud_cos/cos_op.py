@@ -284,7 +284,8 @@ class FileOp(BaseOp):
             local_path = request.get_local_path()
             slice_size = 1024 * 1024
             biz_attr = request.get_biz_attr()
-            upload_slice_request = UploadSliceFileRequest(bucket, cos_path, local_path, slice_size, biz_attr)
+            enable_sha1 = request.get_verify_sha1()
+            upload_slice_request = UploadSliceFileRequest(bucket, cos_path, local_path, slice_size, biz_attr, enable_sha1)
             upload_slice_request.set_insert_only(request.get_insert_only())
             return self.upload_slice_file(upload_slice_request)
 
@@ -557,7 +558,8 @@ class FileOp(BaseOp):
             data = request.get_data()
             slice_size = 1024 * 1024
             biz_attr = request.get_biz_attr()
-            upload_slice_request = UploadSliceFileFromBufferRequest(bucket, cos_path, data, slice_size, biz_attr)
+            enable_sha1 = request.get_verify_sha1()
+            upload_slice_request = UploadSliceFileFromBufferRequest(bucket, cos_path, data, slice_size, biz_attr, enable_sha1)
             upload_slice_request.set_insert_only(request.get_insert_only())
             return self.upload_slice_file_from_buffer(upload_slice_request)
 
