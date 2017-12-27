@@ -329,20 +329,7 @@ class FileOp(BaseOp):
 
         timeout = self._config.get_timeout()
         ret = self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
-
-        if request.get_insert_only() != 0:
-            return ret
-
-        if ret[u'code'] == 0:
-            return ret
-
-        # try to delete object, and re-post request
-        del_request = DelFileRequest(bucket_name=request.get_bucket_name(), cos_path=request.get_cos_path())
-        ret = self.del_file(del_request)
-        if ret[u'code'] == 0:
-            return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
-        else:
-            return ret
+        return ret
 
     def _upload_slice_file(self, request):
         assert isinstance(request, UploadSliceFileRequest)
@@ -430,19 +417,7 @@ class FileOp(BaseOp):
         :return:
         """
         ret = self._upload_slice_file(request)
-
-        if ret[u'code'] == 0:
-            return ret
-
-        if request.get_insert_only() == 0:
-            del_request = DelFileRequest(request.get_bucket_name(), request.get_cos_path())
-            ret = self.del_file(del_request)
-            if ret[u'code'] == 0:
-                return self._upload_slice_file(request)
-            else:
-                return ret
-        else:
-            return ret
+        return ret
 
     def _upload_slice_finish(self, request, session, filesize):
         auth = cos_auth.Auth(self._cred)
@@ -602,20 +577,7 @@ class FileOp(BaseOp):
 
         timeout = self._config.get_timeout()
         ret = self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
-
-        if request.get_insert_only() != 0:
-            return ret
-
-        if ret[u'code'] == 0:
-            return ret
-
-        # try to delete object, and re-post request
-        del_request = DelFileRequest(bucket_name=request.get_bucket_name(), cos_path=request.get_cos_path())
-        ret = self.del_file(del_request)
-        if ret[u'code'] == 0:
-            return self.send_request('POST', bucket, cos_path, headers=http_header, files=http_body, timeout=timeout)
-        else:
-            return ret
+        return ret
 
     def _upload_slice_file_from_buffer(self, request):
         assert isinstance(request, UploadSliceFileFromBufferRequest)
@@ -695,19 +657,7 @@ class FileOp(BaseOp):
         :return:
         """
         ret = self._upload_slice_file_from_buffer(request)
-
-        if ret[u'code'] == 0:
-            return ret
-
-        if request.get_insert_only() == 0:
-            del_request = DelFileRequest(request.get_bucket_name(), request.get_cos_path())
-            ret = self.del_file(del_request)
-            if ret[u'code'] == 0:
-                return self._upload_slice_file_from_buffer(request)
-            else:
-                return ret
-        else:
-            return ret
+        return ret
 
     def _upload_slice_finish_from_buffer(self, request, session, filesize):
         auth = cos_auth.Auth(self._cred)
