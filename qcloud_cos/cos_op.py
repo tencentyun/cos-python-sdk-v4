@@ -891,7 +891,9 @@ class FolderOp(BaseOp):
         http_body['num'] = request.get_num()
 
         http_body['context'] = request.get_context()
-        http_body['delimiter'] = request.get_delimiter()
+        
+        if request.get_delimiter():
+            http_body['delimiter'] = request.get_delimiter()
 
         auth = cos_auth.Auth(self._cred)
         bucket = request.get_bucket_name()
