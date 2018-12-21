@@ -11,6 +11,11 @@ Qcloud COSv4 SDK
 .. image:: https://readthedocs.org/projects/cossdkv4/badge/?version=latest
     :target: http://cossdkv4.readthedocs.io/en/latest/?badge=latest
     
+已弃用 - 请升级到 cos-python-sdk-v5
+_______
+
+SDK 依赖的 JSON API 已弃用，请直接使用基于 XML API 的 [cos-python-sdk-v5](https://github.com/tencentyun/cos-python-sdk-v5)，或者参照 [升级指引](https://cloud.tencent.com/document/product/436/31356) 升级到新版SDK。
+    
 介绍
 _______
 
