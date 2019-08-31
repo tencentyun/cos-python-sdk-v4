@@ -1,10 +1,12 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """the request type in tencent qcloud cos"""
 
-from cos_params_check import ParamCheck
 import collections
+
+import six
+
+from .cos_params_check import ParamCheck
 
 
 class BaseRequest(object):
@@ -572,10 +574,10 @@ class UpdateFileRequest(BaseRequest):
         :param data:
         :return:
         """
-        if isinstance(data, basestring):
+        if isinstance(data, six.string_types):
             return str(data)
         elif isinstance(data, collections.Mapping):
-            return dict(map(self._convert_dict, data.iteritems()))
+            return dict(map(self._convert_dict, data.items()))
         elif isinstance(data, collections.Iterable):
             return type(data)(map(self._convert_dict, data))
         else:
@@ -590,39 +592,24 @@ class UpdateFileRequest(BaseRequest):
         if not super(UpdateFileRequest, self).check_params_valid():
             return False
 
+        check_unicode_params = {
+            'biz_attr': self._biz_attr,
+            'authority': self._authority,
+            'cache_control': self._cache_control,
+            'content_type': self._content_type,
+            'content_disposition': self._content_disposition,
+            'content_language': self._content_language,
+            'content_encoding': self._content_encoding
+        }
+        for k, v in check_unicode_params.items():
+            if v is not None:
+                self._param_check.check_param_unicode(k, v)
+
         if not self._param_check.check_cos_path_valid(self._cos_path, is_file_path=True):
             return False
 
-        if self._biz_attr is not None:
-            if not self._param_check.check_param_unicode('biz_attr', self._biz_attr):
-                return False
-
-        if self._authority is not None:
-            if not self._param_check.check_param_unicode('authority', self._authority):
-                return False
-
         if self._authority is not None:
             if not self._param_check.check_file_authority(self._authority):
-                return False
-
-        if self._cache_control is not None:
-            if not self._param_check.check_param_unicode('cache_control', self._cache_control):
-                return False
-
-        if self._content_type is not None:
-            if not self._param_check.check_param_unicode('content_type', self._content_type):
-                return False
-
-        if self._content_disposition is not None:
-            if not self._param_check.check_param_unicode('content_disposition', self._content_disposition):
-                return False
-
-        if self._content_language is not None:
-            if not self._param_check.check_param_unicode('content_language', self._content_language):
-                return False
-
-        if self._content_encoding is not None:
-            if not self._param_check.check_param_unicode('content_encoding', self._content_encoding):
                 return False
 
         return self._param_check.check_x_cos_meta_dict(self._x_cos_meta_dict)
